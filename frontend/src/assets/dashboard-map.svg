@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 320 220">
+<!-- Grid background -->
+<defs>
+<pattern height="20" id="slamGridBg" patternUnits="userSpaceOnUse" width="20">
+<path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="0.8"></path>
+</pattern>
+</defs>
+<rect fill="url(#slamGridBg)" height="220" width="320"></rect>
+<!-- Map Free space (light gray / white polygons) -->
+<path d="M 30 35 L 290 35 L 290 80 L 250 80 L 250 185 L 140 185 L 140 150 L 30 150 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"></path>
+<!-- Obstacles / Walls (Dark grey blocks & lines) -->
+<!-- Outer wall thickness -->
+<path d="M 28 33 L 292 33 L 292 82 L 252 82 L 252 187 L 138 187 L 138 152 L 28 152 Z" fill="none" stroke="#334155" stroke-linejoin="round" stroke-width="3.5"></path>
+<!-- Internal room pillars / dividers -->
+<rect fill="#334155" height="30" width="16" x="75" y="60"></rect>
+<rect fill="#334155" height="18" width="20" x="180" y="60"></rect>
+<rect fill="#334155" height="15" width="22" x="120" y="110"></rect>
+<rect fill="#334155" height="25" width="14" x="205" y="125"></rect>
+<circle cx="80" cy="120" fill="#334155" r="6"></circle>
+<!-- Planned Trajectory Curve (Bright Green) -->
+<path d="M 85 140 C 95 130 110 120 135 125 C 165 130 195 105 210 95 C 225 85 240 85 255 88" fill="none" stroke="#22C55E" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Robot Blue Position Triangle -->
+<g transform="translate(85, 140) rotate(-40)">
+<circle cx="0" cy="0" fill="#3B82F6" opacity="0.2" r="14"></circle>
+<polygon fill="#1D4ED8" points="0,-9 -7,7 7,7"></polygon>
+</g>
+<!-- Goal Marker (Green Target Circle) -->
+<circle cx="255" cy="88" fill="none" r="4.5" stroke="#22C55E" stroke-width="2.5"></circle>
+<circle cx="255" cy="88" fill="#22C55E" r="1.5"></circle>
+<!-- Bottom-left Axis Scale markers (0, 2, 4, 6 m) -->
+<g transform="translate(20, 205)">
+<line stroke="#94A3B8" stroke-width="1.2" x1="0" x2="120" y1="-3" y2="-3"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="0" x2="0" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="40" x2="40" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="80" x2="80" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="120" x2="120" y1="-6" y2="0"></line>
+<text text-anchor="middle" x="0" y="10">0</text>
+<text text-anchor="middle" x="40" y="10">2</text>
+<text text-anchor="middle" x="80" y="10">4</text>
+<text text-anchor="middle" x="120" y="10">6 m</text>
+</g>
+</svg>

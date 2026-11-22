@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PBL6 - AI Monitoring System</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="base-styling">
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style data-purpose="radar-decorations">
+    /* Subtle grid line for radar coordinate map */
+    .radar-grid-bg {
+      background-size: 33px 33px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="bg-[#EEF2F8] text-[#1E293B] antialiased min-h-screen flex selection:bg-blue-500 selection:text-white">
+<!-- BEGIN: Sidebar -->
+<aside class="w-[245px] bg-[#0A162B] text-slate-300 flex flex-col justify-between shrink-0 min-h-screen border-r border-[#15233D]" data-purpose="sidebar-navigation">
+<div class="p-5">
+<!-- Robot System Brand Header -->
+<div class="flex items-center gap-3 mb-8" data-purpose="brand-logo">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 01-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L4.2 15.3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-white font-bold text-lg leading-tight tracking-tight">PBL6</h1>
+<p class="text-[11px] text-slate-400 font-medium leading-none mt-1">Robot Control &amp; Monitoring System</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="space-y-1.5" data-purpose="nav-links">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-[#162744] transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Dashboard
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-[#162744] transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Manual Control
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-[#162744] transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Mapping &amp; Navigation
+        </a>
+<!-- Active Link: AI Monitoring -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#1769E0] shadow-md shadow-blue-600/30 transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          AI Monitoring
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-[#162744] transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Sensors &amp; Telemetry
+        </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-[#162744] transition-all" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+          Settings
+        </a>
+</nav>
+</div>
+<!-- Sidebar Bottom Status & Wireframe Chassis Graphic -->
+<div class="p-4" data-purpose="sidebar-footer">
+<div class="w-full flex justify-center py-2 opacity-60">
+<!-- Isometric Robot Chassis SVG Wireframe -->
+<svg class="w-32 h-24 text-sky-400" fill="none" stroke="currentColor" viewbox="0 0 160 120">
+<ellipse cx="80" cy="98" fill="currentColor" fill-opacity="0.05" rx="60" ry="12" stroke-opacity="0.2"></ellipse>
+<!-- Wheels -->
+<rect height="26" rx="4" stroke-width="1.5" width="14" x="25" y="70"></rect>
+<rect height="26" rx="4" stroke-width="1.5" width="14" x="120" y="70"></rect>
+<rect height="22" rx="4" stroke-width="1.5" width="14" x="42" y="85"></rect>
+<rect height="22" rx="4" stroke-width="1.5" width="14" x="104" y="85"></rect>
+<!-- Chassis base -->
+<polygon fill="#0E2244" fill-opacity="0.8" points="35,70 125,70 140,88 20,88" stroke-width="1.5"></polygon>
+<!-- Main body box -->
+<polygon fill="#132B54" points="40,50 120,50 135,68 25,68" stroke-width="1.5"></polygon>
+<polygon points="120,50 135,68 135,78 120,60" stroke-width="1.5"></polygon>
+<polygon points="40,50 25,68 25,78 40,60" stroke-width="1.5"></polygon>
+<!-- Lidar tower -->
+<rect fill="#1E3E75" height="18" rx="2" stroke-width="1.5" width="16" x="72" y="32"></rect>
+<ellipse cx="80" cy="32" rx="10" ry="4" stroke-width="1.5"></ellipse>
+</svg>
+</div>
+<!-- Device Switcher Button -->
+<div class="mt-2 bg-[#12233E] border border-[#1E3456] rounded-lg px-3 py-2 flex items-center justify-between text-xs text-white">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="font-medium text-slate-200">Robot: PBL6-01</span>
+</div>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Dashboard Content Area -->
+<main class="flex-1 flex flex-col p-6 space-y-4 overflow-x-hidden max-w-[1600px]" data-purpose="main-layout">
+<!-- BEGIN: TopHeader -->
+<header class="flex flex-wrap items-center justify-between gap-4" data-purpose="page-header">
+<!-- Title & Subtitle -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h2 class="text-xl font-bold text-slate-900 tracking-tight">AI Monitoring</h2>
+<p class="text-xs text-slate-500">Human detection, object tracking and motion prediction for safe navigation</p>
+</div>
+</div>
+<!-- Header Status Cards & Stop Action -->
+<div class="flex items-center gap-3">
+<!-- Online State -->
+<div class="bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-xs flex items-center gap-2.5">
+<div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+<div>
+<div class="text-xs font-bold text-slate-800 leading-tight">Online</div>
+<div class="text-[10px] text-slate-400 font-medium leading-none">Robot Connected</div>
+</div>
+</div>
+<!-- AI Service State -->
+<div class="bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-xs flex items-center gap-2.5">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 3v2m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<div class="text-xs font-bold text-slate-800 leading-tight">AI Service</div>
+<div class="text-[10px] text-emerald-600 font-semibold leading-none">Running</div>
+</div>
+</div>
+<!-- Camera Status -->
+<div class="bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-xs flex items-center gap-2.5">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<div class="text-xs font-bold text-slate-800 leading-tight">Camera</div>
+<div class="text-[10px] text-blue-600 font-semibold leading-none">Streaming (30 FPS)</div>
+</div>
+</div>
+<!-- Stop Emergency Button -->
+<button class="bg-[#E02424] hover:bg-red-700 active:scale-95 transition-all text-white px-5 py-2 rounded-xl font-bold text-sm tracking-wide flex items-center gap-2 shadow-md shadow-red-500/25">
+<span class="w-3.5 h-3.5 bg-white rounded-[2px] block"></span>
+          STOP
+        </button>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: QuickKPIs -->
+<section class="grid grid-cols-5 gap-4" data-purpose="metric-cards">
+<!-- KPI 1: FPS -->
+<div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3.5 shadow-sm">
+<div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-xs text-slate-500 font-medium">FPS</div>
+<div class="text-xl font-bold text-slate-800 tracking-tight leading-none mt-0.5">30.1 <span class="text-xs font-normal text-slate-500">Hz</span></div>
+</div>
+</div>
+<!-- KPI 2: Detections -->
+<div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3.5 shadow-sm">
+<div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v2m0 12v2m8-8h-2M6 12H4m14.071-6.071l-1.414 1.414M7.343 16.657l-1.414 1.414m12.728 0l-1.414-1.414M7.343 7.343L5.929 5.929" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-xs text-slate-500 font-medium">Detections</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-xl font-bold text-slate-800 leading-none">3</span>
+<span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +1</span>
+</div>
+</div>
+</div>
+<!-- KPI 3: Tracked Objects -->
+<div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3.5 shadow-sm">
+<div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-xs text-slate-500 font-medium">Tracked Objects</div>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="text-xl font-bold text-slate-800 leading-none">3</span>
+<span class="text-[11px] text-slate-500 font-normal">IDs: #1, #2, #3</span>
+</div>
+</div>
+</div>
+<!-- KPI 4: Collision Risk -->
+<div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3.5 shadow-sm">
+<div class="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12 9v3.5m0 3.5h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-xs text-slate-500 font-medium">Collision Risk</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-xl font-bold text-red-600 leading-none">0.78</span>
+<span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">High</span>
+</div>
+</div>
+</div>
+<!-- KPI 5: Avg. Confidence -->
+<div class="bg-white rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3.5 shadow-sm">
+<div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<div>
+<div class="text-xs text-slate-500 font-medium">Avg. Confidence</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-xl font-bold text-slate-800 leading-none">0.92</span>
+<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">92%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: QuickKPIs -->
+<!-- BEGIN: PrimaryVisionSection -->
+<section class="grid grid-cols-12 gap-4" data-purpose="vision-monitoring-section">
+<!-- Left Camera Feed (65% -> 8 cols) -->
+<div class="col-span-8 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm flex flex-col justify-between" data-purpose="rgb-camera-card">
+<!-- Feed Card Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">RGB Camera <span class="text-slate-500 font-medium">(YOLO + Tracking + Motion Prediction)</span></h3>
+</div>
+<span class="bg-[#111A2E]/80 text-white text-[11px] font-mono px-2.5 py-1 rounded-md">1920 × 1080 | 30 FPS</span>
+</div>
+<!-- Feed Container with overlays matching screenshot -->
+<div class="relative w-full h-[360px] rounded-xl overflow-hidden bg-slate-900 shadow-inner flex items-center justify-center">
+<!-- Background Scene (Full Hallway Image) -->
+<img alt="RGB Camera Stream" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHvCtMJfpWWyVLVKvMvKZpsXYVhiP24lDWDtvubHhFNvln_M4VAuqtIzzigATfjReHJXARbV-qvsdoVuFj9W53RtCpCUj9UApfBLciHLHEznlGyQx9IkmnQEJzrXDCdjLC8Bh2A6oIfeMpfO-dKLhHNDED_7JZC8vyfFsjD96g9vHwMYO49T7JEUp8UnRTuY9T3a8OnmrCJLMZOtuj45Y6LnUiKQIkFlwm0TCJLIY"/>
+<!-- Overlaid Target Annotation ID #1: Red Box -->
+<div class="absolute left-[30%] top-[25%] w-[11%] h-[53%] border-2 border-red-500 pointer-events-none rounded-xs flex flex-col justify-between">
+<div class="bg-red-600 text-white text-[10px] font-semibold px-1 py-0.5 leading-tight">
+<div>ID: #1 Person</div>
+<div>Conf: 0.96</div>
+</div>
+</div>
+<!-- Overlaid Target Annotation ID #2: Green Box -->
+<div class="absolute left-[42.5%] top-[30%] w-[6.5%] h-[30%] border-2 border-emerald-500 pointer-events-none rounded-xs">
+<div class="bg-emerald-600 text-white text-[9px] font-semibold px-1 py-0.5 leading-tight">
+<div>ID: #2 Person</div>
+<div>Conf: 0.91</div>
+</div>
+</div>
+<!-- Overlaid Target Annotation ID #3: Blue Box -->
+<div class="absolute left-[52.5%] top-[41%] w-[8%] h-[24%] border-2 border-blue-500 pointer-events-none rounded-xs">
+<div class="bg-blue-600 text-white text-[9px] font-semibold px-1 py-0.5 leading-tight">
+<div>ID: #3 Object</div>
+<div>Conf: 0.89</div>
+</div>
+</div>
+<!-- Bottom Lidar & Radar Projection on floor -->
+<div class="absolute inset-x-0 bottom-0 pointer-events-none flex flex-col items-center">
+<!-- Simulated Sector Ground Arc -->
+<svg class="w-full h-44" fill="none" viewbox="0 0 600 200">
+<!-- Safe Arc Green -->
+<path d="M 50 200 A 250 140 0 0 1 550 200 Z" fill="rgba(34, 197, 94, 0.22)" stroke="rgba(34, 197, 94, 0.6)" stroke-width="1.5"></path>
+<!-- Caution Arc Yellow -->
+<path d="M 120 200 A 180 100 0 0 1 480 200 Z" fill="rgba(234, 179, 8, 0.3)" stroke="rgba(234, 179, 8, 0.7)" stroke-width="1.5"></path>
+<!-- High Risk Arc Red -->
+<path d="M 190 200 A 110 65 0 0 1 410 200 Z" fill="rgba(239, 68, 68, 0.45)" stroke="rgba(239, 68, 68, 0.9)" stroke-width="2"></path>
+<!-- Red Trajectory Vector towards robot -->
+<path d="M 210 90 Q 230 150 240 180" fill="none" stroke="#EF4444" stroke-dasharray="6,4" stroke-width="3"></path>
+<polygon fill="#EF4444" points="236,183 246,180 244,171"></polygon>
+<!-- Green Trajectory Vector -->
+<path d="M 270 105 Q 285 130 295 140" fill="none" stroke="#22C55E" stroke-dasharray="5,3" stroke-width="2.5"></path>
+<polygon fill="#22C55E" points="291,142 299,139 297,131"></polygon>
+</svg>
+<!-- Robot Nose / Sensor Pod Top Cut -->
+<div class="-mt-8 w-28 h-10 bg-slate-800 border-2 border-slate-600 rounded-t-xl flex items-center justify-center">
+<div class="w-8 h-4 rounded-full bg-cyan-500 shadow-lg shadow-cyan-400"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Vision Auxiliary Column (35% -> 4 cols) -->
+<div class="col-span-4 flex flex-col gap-4" data-purpose="depth-and-detection-info">
+<!-- Depth Camera Card -->
+<div class="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm" data-purpose="depth-map-card">
+<div class="flex items-center gap-2 mb-3">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">Depth Camera <span class="text-slate-500 font-medium">(Depth Map)</span></h3>
+</div>
+<!-- Depth Visualization Preview with Scale Bar -->
+<div class="relative w-full h-[180px] rounded-xl overflow-hidden bg-slate-900 flex">
+<!-- Simulated Depth Heatmap Background -->
+<div class="flex-1 relative overflow-hidden bg-gradient-to-r from-blue-700 via-sky-600 to-indigo-900 flex items-center justify-center">
+<!-- Gradient Silhouette Shapes -->
+<div class="absolute inset-0 bg-[#001147]">
+<!-- Ambient depth shapes -->
+<div class="absolute left-6 top-8 w-32 h-36 bg-cyan-400/20 blur-md rounded-full"></div>
+<div class="absolute right-12 bottom-2 w-28 h-20 bg-orange-500/30 blur-sm rounded-md"></div>
+</div>
+<!-- Human depth figure #1 (Closer: Yellow to Red) -->
+<div class="relative z-10 flex flex-col items-center mr-8">
+<!-- Head -->
+<div class="w-9 h-11 rounded-full bg-gradient-to-b from-amber-400 to-orange-500 shadow-lg shadow-orange-500/50"></div>
+<!-- Body -->
+<div class="w-20 h-28 mt-1 rounded-t-3xl bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600"></div>
+</div>
+<!-- Human depth figure #2 (Farther: Cyan/Blue) -->
+<div class="relative z-10 flex flex-col items-center opacity-85">
+<div class="w-5 h-6 rounded-full bg-cyan-300"></div>
+<div class="w-10 h-16 mt-0.5 rounded-t-xl bg-cyan-400"></div>
+</div>
+<!-- Box depth shape (Near) -->
+<div class="absolute right-4 bottom-2 w-20 h-12 bg-gradient-to-t from-red-600 to-orange-400 rounded-sm"></div>
+</div>
+<!-- Heatmap Gradient Legend Scale -->
+<div class="w-12 bg-[#091122] flex flex-col justify-between items-center py-2 px-1 text-[10px] font-mono text-slate-300 border-l border-slate-700/50">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>5.0 m</span>
+<span>4.0 m</span>
+<span>3.0 m</span>
+<span>2.0 m</span>
+<span>1.0 m</span>
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>0.5 m</span>
+</div>
+</div>
+</div>
+<!-- Detection Info Card (Selected Target) -->
+<div class="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm flex-1 flex flex-col justify-between" data-purpose="target-details-card">
+<div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-100">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">Detection Info <span class="text-slate-500 font-medium">(Selected: ID #1)</span></h3>
+</div>
+<!-- Details Grid -->
+<div class="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
+<!-- Row 1 -->
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500 font-medium">Class</span>
+<span class="font-bold text-slate-900">Person</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500 font-medium">Distance</span>
+<span class="font-bold text-slate-900">1.42 m</span>
+</div>
+<!-- Row 2 -->
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500 font-medium">Track ID</span>
+<span class="font-bold text-slate-900">#1</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500 font-medium">Velocity</span>
+<span class="font-bold text-slate-900">0.73 m/s</span>
+</div>
+<!-- Row 3 -->
+<div class="flex items-center justify-between py-1">
+<span class="text-slate-500 font-medium">Confidence</span>
+<span class="font-bold text-emerald-600">0.96</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-slate-500 font-medium">Pred. Collision</span>
+<span class="font-bold text-red-600">0.78 (High)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: PrimaryVisionSection -->
+<!-- BEGIN: AnalyticsAndTimeline -->
+<section class="grid grid-cols-12 gap-4 pb-2" data-purpose="bottom-analytics-grid">
+<!-- Col 1: Radar/Cartesian Top View (3.8 cols / ~32%) -->
+<div class="col-span-4 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm flex flex-col justify-between" data-purpose="cartesian-radar-card">
+<div class="flex items-center gap-2 mb-2">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">Top View &amp; Risk Zone <span class="text-slate-500 font-medium">(Robot Coordinate)</span></h3>
+</div>
+<div class="flex gap-3 items-center">
+<!-- Radar Canvas Area -->
+<div class="relative w-[210px] h-[210px] bg-[#111C33] rounded-xl radar-grid-bg border border-slate-700/60 flex items-center justify-center shrink-0 overflow-hidden">
+<!-- Cartesian Axes -->
+<div class="absolute inset-x-0 top-1/2 h-[1px] bg-slate-500/30"></div>
+<div class="absolute inset-y-0 left-1/2 w-[1px] bg-slate-500/30"></div>
+<!-- Risk Sector Arcs -->
+<div class="absolute bottom-[24px] left-1/2 -translate-x-1/2 w-44 h-44 rounded-full border border-emerald-500/40 bg-emerald-500/10 pointer-events-none"></div>
+<div class="absolute bottom-[24px] left-1/2 -translate-x-1/2 w-28 h-28 rounded-full border border-amber-500/50 bg-amber-500/15 pointer-events-none"></div>
+<div class="absolute bottom-[24px] left-1/2 -translate-x-1/2 w-16 h-16 rounded-full border border-red-500/60 bg-red-500/25 pointer-events-none"></div>
+<!-- Coordinate Labels -->
+<span class="absolute top-1 left-1.5 text-[9px] text-slate-400 font-mono">3</span>
+<span class="absolute top-12 left-1.5 text-[9px] text-slate-400 font-mono">2</span>
+<span class="absolute top-23 left-1.5 text-[9px] text-slate-400 font-mono">1</span>
+<span class="absolute top-[96px] left-1.5 text-[9px] text-slate-400 font-mono">0</span>
+<span class="absolute bottom-12 left-1.5 text-[9px] text-slate-400 font-mono">-1</span>
+<span class="absolute bottom-5 left-1.5 text-[9px] text-slate-400 font-mono">-2</span>
+<span class="absolute bottom-0.5 left-1.5 text-[9px] text-slate-400 font-mono">-3</span>
+<!-- X Coordinate Bottom Labels -->
+<div class="absolute bottom-1 inset-x-0 flex justify-between px-3 text-[9px] text-slate-400 font-mono">
+<span>-3</span>
+<span>-2</span>
+<span>-1</span>
+<span>0</span>
+<span>1</span>
+<span>2</span>
+<span>3</span>
+</div>
+<!-- Robot Icon at Origin (X=0, Y=0 offset) -->
+<div class="absolute bottom-[28px] left-1/2 -translate-x-1/2 flex flex-col items-center">
+<div class="w-6 h-5 rounded bg-blue-500 border border-white flex items-center justify-center text-[8px] text-white font-bold shadow-md shadow-blue-500/50">
+                PBL
+              </div>
+</div>
+<!-- Target #1 Node (Red) -->
+<div class="absolute top-[80px] left-[68px] flex flex-col items-center">
+<span class="w-5 h-5 rounded-full bg-red-600 border border-white text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-red-500/50 animate-pulse">#1</span>
+<!-- Trajectory arrow toward robot -->
+<svg class="w-4 h-9 -mt-1 text-red-400" fill="none" viewbox="0 0 16 36">
+<path d="M4 0 L10 32" stroke="#EF4444" stroke-dasharray="3,2" stroke-width="1.8"></path>
+<polygon fill="#EF4444" points="10,34 7,28 13,29"></polygon>
+</svg>
+</div>
+<!-- Target #2 Node (Green) -->
+<div class="absolute top-[52px] right-[70px] flex flex-col items-center">
+<span class="w-5 h-5 rounded-full bg-emerald-500 border border-white text-white text-[9px] font-bold flex items-center justify-center shadow-md">#2</span>
+<svg class="w-5 h-6 -mt-1 text-emerald-400" fill="none" viewbox="0 0 20 24">
+<path d="M5 2 L14 20" stroke="#22C55E" stroke-dasharray="3,2" stroke-width="1.5"></path>
+</svg>
+</div>
+<!-- Target #3 Node (Blue) -->
+<div class="absolute top-[125px] right-[40px]">
+<span class="w-5 h-5 rounded-full bg-blue-600 border border-white text-white text-[9px] font-bold flex items-center justify-center shadow-md">#3</span>
+</div>
+</div>
+<!-- Radar Legend -->
+<div class="flex-1 space-y-2 text-[11px] text-slate-600">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-red-500 shrink-0"></span>
+<span>High Risk (≤ 1.0 m)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-amber-400 shrink-0"></span>
+<span>Caution (1.0 – 2.0 m)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-emerald-500 shrink-0"></span>
+<span>Safe (&gt; 2.0 m)</span>
+</div>
+<div class="pt-2 border-t border-slate-100 space-y-1.5">
+<div class="flex items-center gap-2">
+<div class="w-3.5 h-3 rounded-xs border border-blue-500 bg-blue-100"></div>
+<span class="font-medium text-slate-700">Robot (PBL6)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full border border-blue-600"></div>
+<span>Tracked Object</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-mono text-slate-400 font-bold">---&gt;</span>
+<span>Predicted Trajectory</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Col 2: Tracked Objects Table (4.5 cols / ~38%) -->
+<div class="col-span-5 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm flex flex-col justify-between" data-purpose="tracked-objects-table-card">
+<div>
+<div class="flex items-center gap-2 mb-3">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">Tracked Objects</h3>
+</div>
+<!-- Structured Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead>
+<tr class="text-slate-400 border-b border-slate-100 font-semibold">
+<th class="pb-2">ID</th>
+<th class="pb-2">Class</th>
+<th class="pb-2">Distance</th>
+<th class="pb-2">Velocity</th>
+<th class="pb-2">Risk</th>
+<th class="pb-2">Conf.</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-medium">
+<!-- Row #1 -->
+<tr class="bg-blue-50/40 text-slate-800">
+<td class="py-2.5 font-bold">#1</td>
+<td class="py-2.5">
+<div class="flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                      Person
+                    </div>
+</td>
+<td class="py-2.5">1.42 m</td>
+<td class="py-2.5">0.73 m/s</td>
+<td class="py-2.5">
+<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded">High</span>
+</td>
+<td class="py-2.5 font-bold text-emerald-600">0.96</td>
+</tr>
+<!-- Row #2 -->
+<tr class="text-slate-700 hover:bg-slate-50/80 transition-colors">
+<td class="py-2.5 font-bold">#2</td>
+<td class="py-2.5">
+<div class="flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                      Person
+                    </div>
+</td>
+<td class="py-2.5">3.26 m</td>
+<td class="py-2.5">0.41 m/s</td>
+<td class="py-2.5">
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">Low</span>
+</td>
+<td class="py-2.5 font-bold text-emerald-600">0.91</td>
+</tr>
+<!-- Row #3 -->
+<tr class="text-slate-700 hover:bg-slate-50/80 transition-colors">
+<td class="py-2.5 font-bold">#3</td>
+<td class="py-2.5">
+<div class="flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                      Object
+                    </div>
+</td>
+<td class="py-2.5">2.18 m</td>
+<td class="py-2.5">0.00 m/s</td>
+<td class="py-2.5">
+<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Medium</span>
+</td>
+<td class="py-2.5 font-bold text-slate-700">0.89</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Col 3: Event Timeline (3.5 cols / ~30%) -->
+<div class="col-span-3 bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm flex flex-col justify-between" data-purpose="event-timeline-card">
+<div>
+<!-- Timeline Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<h3 class="font-bold text-sm text-slate-800">Event Timeline</h3>
+</div>
+<!-- Filter Dropdown Pill -->
+<button class="flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-md transition-colors">
+              All Events
+              <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Vertical Timeline Items -->
+<div class="relative pl-5 space-y-3.5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-slate-200">
+<!-- Event 1: High Risk -->
+<div class="relative">
+<div class="absolute -left-[17px] top-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-4 ring-white"></div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-medium text-slate-400">14:32:18</span>
+<span class="inline-flex items-center gap-1 bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  High Risk
+                </span>
+</div>
+<p class="text-[11px] text-slate-600 mt-0.5 leading-snug">High collision risk with ID #1 (Risk: 0.78)</p>
+</div>
+<!-- Event 2: Object Tracked -->
+<div class="relative">
+<div class="absolute -left-[17px] top-1 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-white"></div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-medium text-slate-400">14:32:14</span>
+<span class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Object Tracked
+                </span>
+</div>
+<p class="text-[11px] text-slate-600 mt-0.5 leading-snug">New object tracked: ID #3 (Conf: 0.89, Dist: 2.18 m)</p>
+</div>
+<!-- Event 3: Human Detected #2 -->
+<div class="relative">
+<div class="absolute -left-[17px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-white"></div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-medium text-slate-400">14:32:10</span>
+<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Human Detected
+                </span>
+</div>
+<p class="text-[11px] text-slate-600 mt-0.5 leading-snug">Detected person: ID #2 (Conf: 0.91, Dist: 3.26 m)</p>
+</div>
+<!-- Event 4: Human Detected #1 -->
+<div class="relative">
+<div class="absolute -left-[17px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-white"></div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-mono font-medium text-slate-400">14:32:08</span>
+<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Human Detected
+                </span>
+</div>
+<p class="text-[11px] text-slate-600 mt-0.5 leading-snug">Detected person: ID #1 (Conf: 0.96, Dist: 1.42 m)</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AnalyticsAndTimeline -->
+</main>
+<!-- END: Main Dashboard Content Area -->
+</body></html>

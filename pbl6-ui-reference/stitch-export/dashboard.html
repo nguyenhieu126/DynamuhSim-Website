@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PBL6 Robot Control &amp; Monitoring System</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            sidebar: '#0B1935',
+            'sidebar-hover': '#16284e',
+            'card-border': '#E5EAF2',
+            brand: '#1769E0',
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex overflow-x-hidden">
+<!-- ================= SIDEBAR (Left ~250px) ================= -->
+<aside class="w-[250px] min-h-screen bg-[#0B1935] text-slate-300 flex flex-col justify-between flex-shrink-0 z-30 select-none pb-4 border-r border-[#152749]">
+<div>
+<!-- Brand Logo Header -->
+<div class="px-5 pt-6 pb-5 flex items-center gap-3 border-b border-slate-800/80">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+</div>
+<div>
+<div class="text-white font-extrabold text-lg tracking-tight leading-none">PBL6</div>
+<div class="text-[10px] text-slate-400 font-medium tracking-tight mt-1 leading-tight">Robot Control &amp; Monitoring System</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="px-3 pt-5 space-y-1.5 font-medium text-xs">
+<!-- Active Dashboard -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#1769E0] text-white font-semibold shadow-md shadow-blue-900/30 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#16284e]/70 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">sports_esports</span>
+<span>Manual Control</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#16284e]/70 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">map</span>
+<span>Mapping &amp; Navigation</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#16284e]/70 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">camera_indoor</span>
+<span>AI Monitoring</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#16284e]/70 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">pulse_alert</span>
+<span>Sensors &amp; Telemetry</span>
+</a>
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#16284e]/70 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Sidebar Wireframe & System Healthy Status -->
+<div class="px-3 space-y-3">
+<!-- Wireframe Mecanum Robot Sketch -->
+<div class="px-2 py-1 opacity-70 flex justify-center">
+<svg class="w-40 h-28 text-cyan-400/80 stroke-current fill-none" stroke-width="1.2" viewbox="0 0 160 110">
+<!-- Main Chassis isometric lines -->
+<polygon fill="#0d244c" points="80,18 140,42 80,68 20,42" stroke="currentColor"></polygon>
+<polygon fill="#0a1d3d" points="20,42 80,68 80,82 20,56" stroke="currentColor"></polygon>
+<polygon fill="#102d5d" points="140,42 80,68 80,82 140,56" stroke="currentColor"></polygon>
+<!-- Top LIDAR tower -->
+<polygon fill="#143b78" points="80,8 108,20 80,32 52,20" stroke="currentColor"></polygon>
+<line x1="80" x2="80" y1="18" y2="8"></line>
+<line x1="108" x2="108" y1="20" y2="28"></line>
+<line x1="52" x2="52" y1="20" y2="28"></line>
+<line x1="80" x2="80" y1="32" y2="40"></line>
+<!-- 4 Mecanum Wheels Wireframe (front-left, front-right, rear-left, rear-right) -->
+<!-- FL wheel -->
+<ellipse cx="26" cy="64" rx="10" ry="16" stroke="#38bdf8" stroke-dasharray="2 1" transform="rotate(-15 26 64)"></ellipse>
+<ellipse cx="26" cy="64" rx="6" ry="11" transform="rotate(-15 26 64)"></ellipse>
+<!-- RL wheel -->
+<ellipse cx="80" cy="94" rx="10" ry="16" stroke="#38bdf8" stroke-dasharray="2 1" transform="rotate(-15 80 94)"></ellipse>
+<ellipse cx="80" cy="94" rx="6" ry="11" transform="rotate(-15 80 94)"></ellipse>
+<!-- FR wheel -->
+<ellipse cx="134" cy="64" rx="10" ry="16" stroke="#38bdf8" stroke-dasharray="2 1" transform="rotate(15 134 64)"></ellipse>
+<ellipse cx="134" cy="64" rx="6" ry="11" transform="rotate(15 134 64)"></ellipse>
+<!-- RR wheel -->
+<ellipse cx="80" cy="38" opacity="0.4" rx="7" ry="12" stroke="#0ea5e9"></ellipse>
+</svg>
+</div>
+<!-- System Healthy Badge and Details -->
+<div class="rounded-xl bg-[#0f2244] border border-[#1d3563] p-3 text-xs">
+<div class="flex items-center gap-2 mb-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse"></span>
+<span class="text-white font-bold tracking-tight text-[11px]">System Healthy</span>
+</div>
+<div class="space-y-1.5 text-[10.5px]">
+<div class="flex justify-between items-center text-slate-300">
+<span class="flex items-center gap-1.5 text-slate-400">
+<span class="material-symbols-outlined text-[13px] text-cyan-400">memory</span> Jetson Orin Nano
+            </span>
+<span class="font-mono text-slate-200">52 °C</span>
+</div>
+<div class="flex justify-between items-center text-slate-300">
+<span class="flex items-center gap-1.5 text-slate-400">
+<span class="material-symbols-outlined text-[13px] text-cyan-400">wifi</span> ESP32-S3
+            </span>
+<span class="text-emerald-400 font-semibold">Online</span>
+</div>
+<div class="flex justify-between items-center text-slate-300">
+<span class="flex items-center gap-1.5 text-slate-400">
+<span class="material-symbols-outlined text-[13px] text-cyan-400">hub</span> ROS 2 (Jazzy)
+            </span>
+<span class="text-emerald-400 font-semibold">Running</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT AREA ================= -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- Top Header -->
+<header class="h-[68px] bg-white border-b border-[#E5EAF2] px-6 flex items-center justify-between sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+<!-- Left: Robot Title & Online Status -->
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 p-1 flex items-center justify-center overflow-hidden shadow-xs">
+<!-- Robot thumbnail -->
+<svg class="w-8 h-8 text-slate-700" fill="currentColor" viewbox="0 0 24 24">
+<path d="M19 8h-1V5a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v3H5a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3h1v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1h1a3 3 0 0 0 3-3v-4a3 3 0 0 0-3-3zM8 5h8v3H8V5zm8 14H8v-1h8v1zm4-4a1 1 0 0 1-1 1h-1v-2H6v2H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4z"></path>
+</svg>
+</div>
+<div>
+<div class="text-[17px] font-extrabold text-slate-900 leading-tight">Robot PBL6-01</div>
+<div class="text-xs text-slate-500 font-medium">Autonomous Mobile Robot (Mecanum)</div>
+</div>
+<span class="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200/80">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Online
+        </span>
+</div>
+<!-- Right: Mode Switches, STOP, Notification, Profile -->
+<div class="flex items-center gap-3.5">
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Mode Toggle -->
+<div class="flex items-center p-1 rounded-xl bg-slate-100/90 border border-slate-200 gap-1 text-xs">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">pan_tool</span>
+            Manual
+          </button>
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1769E0] text-white font-semibold shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px]">near_me</span>
+            Autonomous
+          </button>
+</div>
+<!-- STOP Button -->
+<button class="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#DC2626] hover:bg-red-700 active:scale-95 text-white font-bold text-sm tracking-wide shadow-sm shadow-red-500/20 transition-all" type="button">
+<span class="w-3.5 h-3.5 bg-white rounded-xs"></span>
+          STOP
+        </button>
+<!-- Notification Bell -->
+<div class="relative">
+<button class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">3</span>
+</div>
+<!-- Profile Avatar -->
+<div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 cursor-pointer hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+</div>
+</header>
+<!-- Main Container Body -->
+<main class="flex-1 p-5 space-y-4 max-w-[1720px] w-full mx-auto">
+<!-- ================= ROW 1: 4 KPI CARDS ================= -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1: Robot Status -->
+<div class="bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate-600 font-semibold text-xs">
+<div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[17px]">wifi</span>
+</div>
+              Robot Status
+            </div>
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="text-[26px] font-extrabold text-emerald-600 leading-none">Online</div>
+<div class="text-xs text-slate-400 font-medium mt-1.5">All systems nominal</div>
+</div>
+</div>
+<!-- KPI 2: Battery -->
+<div class="bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate-600 font-semibold text-xs">
+<div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[17px]">battery_charging_full</span>
+</div>
+              Battery
+            </div>
+<!-- 5-segment graphic -->
+<div class="flex items-center gap-0.5">
+<span class="w-2 h-4 rounded-xs bg-emerald-500"></span>
+<span class="w-2 h-4 rounded-xs bg-emerald-500"></span>
+<span class="w-2 h-4 rounded-xs bg-emerald-500"></span>
+<span class="w-2 h-4 rounded-xs bg-emerald-500"></span>
+<span class="w-2 h-4 rounded-xs bg-slate-200"></span>
+</div>
+</div>
+<div class="mt-3">
+<div class="text-[26px] font-extrabold text-slate-900 leading-none">78%</div>
+<div class="text-xs text-slate-400 font-medium mt-1.5">24.1 V | Est. 3 h 12 min</div>
+</div>
+</div>
+<!-- KPI 3: Speed -->
+<div class="bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate-600 font-semibold text-xs">
+<div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[17px]">speed</span>
+</div>
+              Speed
+            </div>
+</div>
+<div class="mt-3">
+<div class="text-[26px] font-extrabold text-slate-900 leading-none">0.42 m/s</div>
+<div class="text-xs text-slate-400 font-medium mt-1.5">Linear: 0.40 m/s | Angular: 0.08 rad/s</div>
+</div>
+</div>
+<!-- KPI 4: Mode -->
+<div class="bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate-600 font-semibold text-xs">
+<div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[17px]">layers</span>
+</div>
+              Mode
+            </div>
+<div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[15px]">near_me</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="text-[26px] font-extrabold text-[#1769E0] leading-none">Autonomous</div>
+<div class="text-xs text-slate-400 font-medium mt-1.5">Navigation (Nav2) – Executing</div>
+</div>
+</div>
+</div>
+<!-- ================= ROW 2: LIVE CAMERA & SLAM MAP ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+<!-- Left: Live Camera (7 cols) -->
+<div class="lg:col-span-7 bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col">
+<!-- Card Header -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2 font-bold text-slate-900 text-sm">
+<span class="material-symbols-outlined text-blue-600 text-[20px]">videocam</span>
+              Live Camera
+            </div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-slate-100 rounded-lg p-0.5 text-xs font-semibold">
+<button class="px-2.5 py-1 rounded-md bg-[#1769E0] text-white shadow-xs" type="button">RGB (RealSense)</button>
+<button class="px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900" type="button">Depth</button>
+</div>
+<span class="text-xs font-mono font-medium text-slate-500">FPS: 30</span>
+<button class="text-slate-400 hover:text-slate-600" type="button">
+<span class="material-symbols-outlined text-[19px]">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Dual Split Video Viewport -->
+<div class="relative w-full aspect-[16/9] bg-slate-950 rounded-xl overflow-hidden grid grid-cols-2 gap-0.5 border border-slate-200">
+<!-- Left Half: RGB View with Person & Bounding Box -->
+<div class="relative w-full h-full overflow-hidden bg-slate-800">
+<img alt="Office Hallway corridor" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD55mWSxfsxoOgpCJRXBYe7nytCwVtZ_A_chRmJGQ-9PHXybMUJ1kbre8GYLIH1UoWLX_9wfDsWLAQgwXi8p2t8WAt0myK0kohhmt2mlIUQcbHip0jNHlQ-PUsDsOZnbNwun6Q1xGXxHRaZ0xJvKaJ4-BHiMbCvIWM0gw2Mg3ibalJKQjQt8i7uLxHNzv2wxZzpEZEklSXxTX0I7E1qvmpfkb7tDM3yCljjtSw0l-E"/>
+<!-- AI Person Bounding Box -->
+<div class="absolute top-[24%] left-[34%] w-[32%] h-[60%] border-2 border-emerald-400 rounded-sm">
+<!-- Tag -->
+<div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.2 rounded-xs whitespace-nowrap shadow">
+                  Person (0.96)
+                </div>
+</div>
+</div>
+<!-- Right Half: Thermal / Depth Map -->
+<div class="relative w-full h-full overflow-hidden bg-gradient-to-b from-blue-950 via-indigo-900 to-emerald-950 flex items-center justify-center">
+<!-- Simulated Depth Silhouette of Person in corridor -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 200 150">
+<defs>
+<radialgradient cx="50%" cy="50%" id="depthPerson" r="50%">
+<stop offset="0%" stop-color="#4ade80"></stop>
+<stop offset="45%" stop-color="#06b6d4"></stop>
+<stop offset="85%" stop-color="#2563eb"></stop>
+<stop offset="100%" stop-color="#0f172a"></stop>
+</radialgradient>
+<lineargradient id="depthScale" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#ef4444"></stop>
+<stop offset="25%" stop-color="#eab308"></stop>
+<stop offset="50%" stop-color="#22c55e"></stop>
+<stop offset="75%" stop-color="#06b6d4"></stop>
+<stop offset="100%" stop-color="#3b82f6"></stop>
+</lineargradient>
+</defs>
+<!-- Corridor perspective walls in deep blues -->
+<polygon fill="#09142b" points="0,0 200,0 130,40 70,40"></polygon>
+<polygon fill="#0369a1" opacity="0.6" points="0,150 200,150 130,115 70,115"></polygon>
+<polygon fill="#0d234d" points="0,0 70,40 70,115 0,150"></polygon>
+<polygon fill="#0d234d" points="200,0 130,40 130,115 200,150"></polygon>
+<rect fill="#1e1b4b" height="75" width="60" x="70" y="40"></rect>
+<!-- Person silhouette heatmap -->
+<path d="M 94 58 C 94 53 106 53 106 58 C 106 63 94 63 94 58 Z M 91 66 C 93 63 107 63 109 66 L 111 86 L 105 86 L 104 112 L 96 112 L 95 86 L 89 86 Z" fill="url(#depthPerson)"></path>
+</svg>
+<!-- Vertical Depth Scale Indicator on far right -->
+<div class="absolute right-2 top-2 bottom-2 w-3 flex flex-col items-center justify-between text-[9px] font-mono text-white/90">
+<span class="bg-black/60 px-0.5 rounded text-[8px] leading-tight mb-0.5">5.0 m</span>
+<div class="w-2 flex-1 rounded-sm shadow-sm" style="background: linear-gradient(to bottom, #ef4444, #f97316, #eab308, #22c55e, #06b6d4, #3b82f6, #1d4ed8);"></div>
+<span class="bg-black/60 px-0.5 rounded text-[8px] leading-tight mt-0.5">0.0 m</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: SLAM Map (2D) (5 cols) -->
+<div class="lg:col-span-5 bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<!-- Card Header -->
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2 font-bold text-slate-900 text-sm">
+<span class="material-symbols-outlined text-blue-600 text-[20px]">map</span>
+              SLAM Map (2D)
+            </div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Localization OK
+              </span>
+<button class="text-slate-400 hover:text-slate-600" type="button">
+<span class="material-symbols-outlined text-[19px]">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- SLAM SVG Canvas Area -->
+<div class="relative w-full aspect-[4/3] bg-slate-50 border border-slate-200 rounded-xl overflow-hidden p-2 flex items-center justify-center">
+<svg class="w-full h-full" fill="none" viewbox="0 0 320 220">
+<!-- Grid background -->
+<defs>
+<pattern height="20" id="slamGridBg" patternunits="userSpaceOnUse" width="20">
+<path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="0.8"></path>
+</pattern>
+</defs>
+<rect fill="url(#slamGridBg)" height="220" width="320"></rect>
+<!-- Map Free space (light gray / white polygons) -->
+<path d="M 30 35 L 290 35 L 290 80 L 250 80 L 250 185 L 140 185 L 140 150 L 30 150 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"></path>
+<!-- Obstacles / Walls (Dark grey blocks & lines) -->
+<!-- Outer wall thickness -->
+<path d="M 28 33 L 292 33 L 292 82 L 252 82 L 252 187 L 138 187 L 138 152 L 28 152 Z" fill="none" stroke="#334155" stroke-linejoin="round" stroke-width="3.5"></path>
+<!-- Internal room pillars / dividers -->
+<rect fill="#334155" height="30" width="16" x="75" y="60"></rect>
+<rect fill="#334155" height="18" width="20" x="180" y="60"></rect>
+<rect fill="#334155" height="15" width="22" x="120" y="110"></rect>
+<rect fill="#334155" height="25" width="14" x="205" y="125"></rect>
+<circle cx="80" cy="120" fill="#334155" r="6"></circle>
+<!-- Planned Trajectory Curve (Bright Green) -->
+<path d="M 85 140 C 95 130 110 120 135 125 C 165 130 195 105 210 95 C 225 85 240 85 255 88" fill="none" stroke="#22C55E" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Robot Blue Position Triangle -->
+<g transform="translate(85, 140) rotate(-40)">
+<circle cx="0" cy="0" fill="#3B82F6" opacity="0.2" r="14"></circle>
+<polygon fill="#1D4ED8" points="0,-9 -7,7 7,7"></polygon>
+</g>
+<!-- Goal Marker (Green Target Circle) -->
+<circle cx="255" cy="88" fill="none" r="4.5" stroke="#22C55E" stroke-width="2.5"></circle>
+<circle cx="255" cy="88" fill="#22C55E" r="1.5"></circle>
+<!-- Bottom-left Axis Scale markers (0, 2, 4, 6 m) -->
+<g class="text-[9px] font-mono fill-slate-500" transform="translate(20, 205)">
+<line stroke="#94A3B8" stroke-width="1.2" x1="0" x2="120" y1="-3" y2="-3"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="0" x2="0" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="40" x2="40" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="80" x2="80" y1="-6" y2="0"></line>
+<line stroke="#94A3B8" stroke-width="1" x1="120" x2="120" y1="-6" y2="0"></line>
+<text text-anchor="middle" x="0" y="10">0</text>
+<text text-anchor="middle" x="40" y="10">2</text>
+<text text-anchor="middle" x="80" y="10">4</text>
+<text text-anchor="middle" x="120" y="10">6 m</text>
+</g>
+</svg>
+<!-- Legend Overlay Box (Top-Right) -->
+<div class="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-xs border border-slate-200 rounded-lg p-2 text-[10px] space-y-1 shadow-xs pointer-events-none">
+<div class="font-bold text-slate-800 text-[10.5px] mb-1">Legend</div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="text-blue-600 font-bold">▲</span> Robot (x, y, θ)
+              </div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="w-3 h-0.5 bg-emerald-500 rounded"></span> Planned Path
+              </div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="w-2.5 h-2.5 rounded-full border border-emerald-500"></span> Goal
+              </div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="w-2.5 h-2.5 bg-slate-700 rounded-xs"></span> Obstacle
+              </div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="w-2.5 h-2.5 border border-slate-300 bg-white rounded-xs"></span> Free Space
+              </div>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="w-2.5 h-2.5 bg-slate-200 rounded-xs"></span> Unknown
+              </div>
+</div>
+<!-- Pose (map) Readout Box (Bottom-Right) -->
+<div class="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-xs border border-slate-200 rounded-lg p-2 font-mono text-[10px] shadow-xs pointer-events-none">
+<div class="font-bold text-slate-800 text-[10.5px] font-sans mb-0.5">Pose (map)</div>
+<div class="text-slate-600"><span class="text-slate-400">x :</span> 4.82 m</div>
+<div class="text-slate-600"><span class="text-slate-400">y :</span> 2.13 m</div>
+<div class="text-slate-600"><span class="text-slate-400">θ :</span> 87.6°</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= ROW 3: SENSORS & TELEMETRY + RECENT ALERTS ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+<!-- Left: Sensors & Telemetry (Realtime) (8 cols) -->
+<div class="lg:col-span-8 bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<!-- Card Title -->
+<div class="flex items-center gap-2 font-bold text-slate-900 text-sm mb-3">
+<span class="material-symbols-outlined text-blue-600 text-[20px]">pulse_alert</span>
+            Sensors &amp; Telemetry <span class="font-normal text-slate-500 text-xs">(Realtime)</span>
+</div>
+<!-- 3 Sub-Cards (LiDAR, IMU, Encoder) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- Subcard 1: LiDAR (RPLIDAR A2) -->
+<div class="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+<span class="material-symbols-outlined text-blue-600 text-[16px]">radar</span>
+                    LiDAR <span class="text-[10px] font-medium text-slate-500">(RPLIDAR A2)</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">Running</span>
+</div>
+<div class="space-y-1 text-[11px] text-slate-600 border-b border-slate-200 pb-2">
+<div class="flex justify-between"><span>Scan Rate</span><span class="font-mono font-semibold text-slate-800">10.0 Hz</span></div>
+<div class="flex justify-between"><span>Points / Scan</span><span class="font-mono font-semibold text-slate-800">720</span></div>
+<div class="flex justify-between"><span>Range</span><span class="font-mono font-semibold text-slate-800">0.15 – 12.00 m</span></div>
+<div class="flex justify-between"><span>Nearest Obs.</span><span class="font-mono font-semibold text-slate-800">0.68 m</span></div>
+</div>
+</div>
+<!-- Half circle Polar Radar Point Cloud Visual -->
+<div class="relative w-full aspect-[2/1] mt-2 flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full" viewbox="0 0 160 80">
+<!-- Arc grids -->
+<path d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="#CBD5E1" stroke-dasharray="2 2" stroke-width="1"></path>
+<path d="M 30 80 A 50 50 0 0 1 130 80" fill="none" stroke="#CBD5E1" stroke-dasharray="2 2" stroke-width="1"></path>
+<path d="M 50 80 A 30 30 0 0 1 110 80" fill="none" stroke="#CBD5E1" stroke-dasharray="2 2" stroke-width="1"></path>
+<!-- Radial Angle Lines -->
+<line stroke="#CBD5E1" stroke-width="1" x1="80" x2="80" y1="80" y2="10"></line>
+<line stroke="#CBD5E1" stroke-dasharray="2 2" stroke-width="0.8" x1="80" x2="25" y1="80" y2="35"></line>
+<line stroke="#CBD5E1" stroke-dasharray="2 2" stroke-width="0.8" x1="80" x2="135" y1="80" y2="35"></line>
+<!-- Distance labels -->
+<text class="text-[7px] fill-slate-400 font-mono" x="82" y="24">8 m</text>
+<text class="text-[7px] fill-slate-400 font-mono" x="82" y="44">6 m</text>
+<text class="text-[7px] fill-slate-400 font-mono" x="82" y="64">4 m</text>
+<text class="text-[7px] fill-slate-400 font-mono" x="82" y="78">2 m</text>
+<!-- Angle labels -->
+<text class="text-[7px] fill-slate-400 font-mono" x="5" y="78">-90°</text>
+<text class="text-[7px] fill-slate-400 font-mono" text-anchor="middle" x="80" y="8">0°</text>
+<text class="text-[7px] fill-slate-400 font-mono" x="145" y="78">90°</text>
+<!-- Simulated Blue Laser Obstacle Points -->
+<circle cx="48" cy="62" fill="#2563EB" r="1.5"></circle>
+<circle cx="53" cy="55" fill="#2563EB" r="1.5"></circle>
+<circle cx="58" cy="51" fill="#2563EB" r="1.5"></circle>
+<circle cx="64" cy="48" fill="#2563EB" r="1.5"></circle>
+<circle cx="70" cy="46" fill="#3B82F6" r="1.5"></circle>
+<circle cx="95" cy="42" fill="#2563EB" r="1.5"></circle>
+<circle cx="103" cy="45" fill="#2563EB" r="1.5"></circle>
+<circle cx="112" cy="52" fill="#2563EB" r="1.5"></circle>
+<circle cx="118" cy="59" fill="#2563EB" r="1.5"></circle>
+<circle cx="124" cy="67" fill="#2563EB" r="1.5"></circle>
+<circle cx="78" cy="72" fill="#EF4444" r="2"></circle> <!-- Nearest obstacle -->
+</svg>
+</div>
+</div>
+<!-- Subcard 2: IMU (BMI088) -->
+<div class="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+<span class="material-symbols-outlined text-blue-600 text-[16px]">navigation</span>
+                    IMU <span class="text-[10px] font-medium text-slate-500">(BMI088)</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">Running</span>
+</div>
+<!-- Telemetry text lines -->
+<div class="space-y-1.5 text-[10.5px] border-b border-slate-200 pb-2">
+<div>
+<span class="text-slate-500 block text-[9.5px]">Acceleration (m/s²)</span>
+<span class="font-mono text-slate-700">Ax: <strong class="text-slate-900">0.02</strong> Ay: <strong class="text-slate-900">-0.01</strong> Az: <strong class="text-slate-900">9.81</strong></span>
+</div>
+<div>
+<span class="text-slate-500 block text-[9.5px]">Angular Velocity (rad/s)</span>
+<span class="font-mono text-slate-700">ωx: <strong class="text-slate-900">0.004</strong> ωy: <strong class="text-slate-900">0.006</strong> ωz: <strong class="text-slate-900">0.079</strong></span>
+</div>
+<div>
+<span class="text-slate-500 block text-[9.5px]">Orientation (RPY)</span>
+<span class="font-mono text-slate-700">Roll: <strong class="text-slate-900">0.5°</strong> Pitch: <strong class="text-slate-900">-1.2°</strong> Yaw: <strong class="text-slate-900">87.6°</strong></span>
+</div>
+</div>
+</div>
+<!-- Multi-line Realtime Chart -->
+<div class="mt-2">
+<div class="flex items-center justify-center gap-3 text-[9px] font-mono text-slate-500 mb-1">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Ax</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ay</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Az</span>
+</div>
+<svg class="w-full h-16" viewbox="0 0 180 60">
+<!-- Axis grid -->
+<line stroke="#E2E8F0" stroke-width="0.8" x1="20" x2="175" y1="10" y2="10"></line>
+<line stroke="#E2E8F0" stroke-width="0.8" x1="20" x2="175" y1="25" y2="25"></line>
+<line stroke="#CBD5E1" stroke-width="1" x1="20" x2="175" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-width="0.8" x1="20" x2="175" y1="55" y2="55"></line>
+<!-- Axis values -->
+<text class="text-[7px] fill-slate-400 font-mono" text-anchor="end" x="16" y="13">12</text>
+<text class="text-[7px] fill-slate-400 font-mono" text-anchor="end" x="16" y="28">6</text>
+<text class="text-[7px] fill-slate-400 font-mono" text-anchor="end" x="16" y="43">0</text>
+<text class="text-[7px] fill-slate-400 font-mono" text-anchor="end" x="16" y="58">-6</text>
+<!-- Az line (Orange ~9.8) -->
+<path d="M 20 12 Q 50 11 90 12 T 175 12" fill="none" stroke="#F59E0B" stroke-width="1.8"></path>
+<!-- Ax line (Blue ~0) -->
+<path d="M 20 40 Q 40 38 80 41 T 130 39 T 175 40" fill="none" stroke="#3B82F6" stroke-width="1.5"></path>
+<!-- Ay line (Green ~0) -->
+<path d="M 20 41 Q 60 42 100 40 T 150 41 T 175 41" fill="none" stroke="#10B981" stroke-width="1.5"></path>
+</svg>
+<div class="flex justify-between text-[8px] font-mono text-slate-400 px-5 -mt-1">
+<span>-30</span>
+<span>-20</span>
+<span>-10</span>
+<span>0</span>
+</div>
+</div>
+</div>
+<!-- Subcard 3: Encoder (4 Wheels) -->
+<div class="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+<span class="material-symbols-outlined text-blue-600 text-[16px]">sync</span>
+                    Encoder <span class="text-[10px] font-medium text-slate-500">(4 Wheels)</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">Running</span>
+</div>
+<!-- 4 Wheels Table -->
+<table class="w-full text-[10px] text-left border-b border-slate-200 pb-2">
+<thead>
+<tr class="text-slate-400 border-b border-slate-200/60 pb-1">
+<th class="font-normal pb-1">Wheel</th>
+<th class="font-normal pb-1 text-center">RPM</th>
+<th class="font-normal pb-1 text-right">Velocity (m/s)</th>
+</tr>
+</thead>
+<tbody class="font-mono text-slate-700">
+<tr>
+<td class="py-0.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> FL</td>
+<td class="text-center font-semibold text-slate-900">48.7</td>
+<td class="text-right">0.41</td>
+</tr>
+<tr>
+<td class="py-0.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> FR</td>
+<td class="text-center font-semibold text-slate-900">49.1</td>
+<td class="text-right">0.41</td>
+</tr>
+<tr>
+<td class="py-0.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> RL</td>
+<td class="text-center font-semibold text-slate-900">48.3</td>
+<td class="text-right">0.40</td>
+</tr>
+<tr>
+<td class="py-0.5 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> RR</td>
+<td class="text-center font-semibold text-slate-900">49.0</td>
+<td class="text-right">0.41</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Mini Bar Chart of RPM -->
+<div class="mt-2">
+<div class="flex items-end justify-between gap-2 h-14 px-3 pt-2">
+<div class="flex-1 flex flex-col items-center">
+<span class="text-[9px] font-mono text-slate-700 mb-0.5">48.7</span>
+<div class="w-full bg-[#1769E0] rounded-t-xs" style="height: 38px"></div>
+<span class="text-[8px] font-medium text-slate-500 mt-1">FL</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<span class="text-[9px] font-mono text-slate-700 mb-0.5">49.1</span>
+<div class="w-full bg-[#1769E0] rounded-t-xs" style="height: 40px"></div>
+<span class="text-[8px] font-medium text-slate-500 mt-1">FR</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<span class="text-[9px] font-mono text-slate-700 mb-0.5">48.3</span>
+<div class="w-full bg-[#1769E0] rounded-t-xs" style="height: 37px"></div>
+<span class="text-[8px] font-medium text-slate-500 mt-1">RL</span>
+</div>
+<div class="flex-1 flex flex-col items-center">
+<span class="text-[9px] font-mono text-slate-700 mb-0.5">49.0</span>
+<div class="w-full bg-[#1769E0] rounded-t-xs" style="height: 39px"></div>
+<span class="text-[8px] font-medium text-slate-500 mt-1">RR</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Recent Alerts & Events (4 cols) -->
+<div class="lg:col-span-4 bg-white rounded-2xl border border-[#E5EAF2] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<!-- Card Title & View All -->
+<div>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2 font-bold text-slate-900 text-sm">
+<span class="material-symbols-outlined text-blue-600 text-[20px]">notifications</span>
+                Recent Alerts &amp; Events
+              </div>
+<a class="text-xs font-semibold text-[#1769E0] hover:underline flex items-center" href="#">
+                View All <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<!-- List of 5 Events -->
+<div class="space-y-3">
+<!-- Event 1 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-slate-100">
+<div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[15px]">info</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-1">
+<div class="text-xs font-bold text-slate-900 truncate">Navigation: Reached waypoint #2</div>
+<span class="text-[10px] font-mono text-slate-400 flex-shrink-0">14:26:18</span>
+</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Distance traveled: 4.31 m, Time: 10.2 s</div>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-slate-100">
+<div class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-1">
+<div class="text-xs font-bold text-slate-900 truncate">Path planning: New goal received</div>
+<span class="text-[10px] font-mono text-slate-400 flex-shrink-0">14:16:07</span>
+</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Goal: (8.50, 2.10), Status: Executing</div>
+</div>
+</div>
+<!-- Event 3 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-slate-100">
+<div class="w-6 h-6 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[15px]">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-1">
+<div class="text-xs font-bold text-slate-900 truncate">Human detected in front (0.96)</div>
+<span class="text-[10px] font-mono text-slate-400 flex-shrink-0">14:15:41</span>
+</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Distance: 2.37 m, Robot slowing down</div>
+</div>
+</div>
+<!-- Event 4 -->
+<div class="flex items-start gap-2.5 pb-2.5 border-b border-slate-100">
+<div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[15px]">info</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-1">
+<div class="text-xs font-bold text-slate-900 truncate">SLAM: Map updated</div>
+<span class="text-[10px] font-mono text-slate-400 flex-shrink-0">14:14:09</span>
+</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Map size: 10.0 m × 8.0 m, Resolution: 0.05 m</div>
+</div>
+</div>
+<!-- Event 5 -->
+<div class="flex items-start gap-2.5">
+<div class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline justify-between gap-1">
+<div class="text-xs font-bold text-slate-900 truncate">System: All nodes running</div>
+<span class="text-[10px] font-mono text-slate-400 flex-shrink-0">14:10:03</span>
+</div>
+<div class="text-[11px] text-slate-500 mt-0.5">Nav2, SLAM, Vision, Control – Healthy</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

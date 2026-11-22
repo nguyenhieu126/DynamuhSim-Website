@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PBL6 Robot Control &amp; Monitoring System - Sensors &amp; Telemetry</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0B1935',
+              dark: '#081226',
+              blue: '#1769E0',
+              cyan: '#06B6D4',
+              teal: '#00D2D3'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<style data-purpose="telemetry-card-styling">
+    .telemetry-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+    }
+    .grid-line {
+      stroke: #f1f5f9;
+      stroke-width: 1;
+    }
+    .axis-line {
+      stroke: #cbd5e1;
+      stroke-width: 1;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased font-sans flex min-h-screen">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-[#0B1935] flex flex-col justify-between shrink-0 select-none z-20 text-slate-300">
+<div>
+<!-- System Logo & Header -->
+<div class="px-5 py-5 flex items-center gap-3 border-b border-slate-800">
+<div class="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+<svg class="w-6 h-6 fill-current" viewbox="0 0 24 24">
+<path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3h4V5.72A2 2 0 0 1 10 4a2 2 0 0 1 2-2m-3 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-7 6h8v-1H8v1Z"></path>
+</svg>
+</div>
+<div>
+<h1 class="font-bold text-white tracking-wide text-base leading-tight">PBL6</h1>
+<p class="text-[11px] text-slate-400 font-medium leading-tight">Robot Control &amp; Monitoring System</p>
+</div>
+</div>
+<!-- Main Navigation Menu -->
+<nav class="mt-4 px-3 space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 font-medium text-sm transition-colors" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="7" rx="1.5" width="7" x="3" y="3"></rect>
+<rect height="7" rx="1.5" width="7" x="14" y="3"></rect>
+<rect height="7" rx="1.5" width="7" x="14" y="14"></rect>
+<rect height="7" rx="1.5" width="7" x="3" y="14"></rect>
+</svg>
+          Dashboard
+        </a>
+<!-- Manual Control -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 font-medium text-sm transition-colors" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="12" rx="6" width="20" x="2" y="6"></rect>
+<path d="M6 12h4m-2-2v4m9-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"></path>
+</svg>
+          Manual Control
+        </a>
+<!-- Mapping & Navigation -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 font-medium text-sm transition-colors" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+<line x1="9" x2="9" y1="3" y2="18"></line>
+<line x1="15" x2="15" y1="6" y2="21"></line>
+</svg>
+          Mapping &amp; Navigation
+        </a>
+<!-- AI Monitoring -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 font-medium text-sm transition-colors" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path>
+<circle cx="12" cy="12" r="8" stroke-dasharray="2 2"></circle>
+</svg>
+          AI Monitoring
+        </a>
+<!-- Sensors & Telemetry (Active State) -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-[#1769E0] text-white font-medium text-sm shadow-md shadow-blue-900/30" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+</svg>
+          Sensors &amp; Telemetry
+        </a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 font-medium text-sm transition-colors" href="#">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+</svg>
+          Settings
+        </a>
+</nav>
+</div>
+<!-- Bottom Isometric Mecanum Robot Wireframe Illustration -->
+<div class="p-4 flex flex-col items-center">
+<div class="w-48 h-32 relative opacity-85 hover:opacity-100 transition-opacity">
+<svg class="w-full h-full stroke-cyan-400 fill-none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3" viewbox="0 0 220 160">
+<!-- Robot Platform Isometric Chassis -->
+<polygon class="fill-cyan-950/40 stroke-cyan-400" points="110,45 180,75 110,105 40,75"></polygon>
+<polygon class="fill-cyan-900/30 stroke-cyan-400" points="40,75 110,105 110,120 40,90"></polygon>
+<polygon class="fill-cyan-950/60 stroke-cyan-400" points="180,75 110,105 110,120 180,90"></polygon>
+<!-- Sensor Mast / LiDAR Tier -->
+<line class="stroke-cyan-300" stroke-width="2" x1="110" x2="110" y1="45" y2="28"></line>
+<ellipse class="fill-cyan-900/50 stroke-cyan-300" cx="110" cy="27" rx="14" ry="7"></ellipse>
+<ellipse class="fill-cyan-500/20 stroke-cyan-300" cx="110" cy="22" rx="10" ry="5"></ellipse>
+<!-- Front Left Mecanum Wheel -->
+<g transform="translate(32, 85)">
+<ellipse class="fill-slate-900 stroke-cyan-400" cx="0" cy="0" rx="12" ry="18" stroke-width="1.5"></ellipse>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-8" x2="8" y1="-8" y2="8"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-10" x2="6" y1="-2" y2="14"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-6" x2="10" y1="-14" y2="2"></line>
+</g>
+<!-- Front Right Mecanum Wheel -->
+<g transform="translate(188, 85)">
+<ellipse class="fill-slate-900 stroke-cyan-400" cx="0" cy="0" rx="12" ry="18" stroke-width="1.5"></ellipse>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="8" x2="-8" y1="-8" y2="8"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="10" x2="-6" y1="-2" y2="14"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="6" x2="-10" y1="-14" y2="2"></line>
+</g>
+<!-- Rear Left Mecanum Wheel -->
+<g transform="translate(85, 125)">
+<ellipse class="fill-slate-900 stroke-cyan-400" cx="0" cy="0" rx="14" ry="18" stroke-width="1.5"></ellipse>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="8" x2="-8" y1="-8" y2="8"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="10" x2="-6" y1="-2" y2="14"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="6" x2="-10" y1="-14" y2="2"></line>
+</g>
+<!-- Rear Right Mecanum Wheel -->
+<g transform="translate(135, 125)">
+<ellipse class="fill-slate-900 stroke-cyan-400" cx="0" cy="0" rx="14" ry="18" stroke-width="1.5"></ellipse>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-8" x2="8" y1="-8" y2="8"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-10" x2="6" y1="-2" y2="14"></line>
+<line class="stroke-cyan-300" stroke-width="1.2" x1="-6" x2="10" y1="-14" y2="2"></line>
+</g>
+<!-- Top Mounted Depth Camera Body -->
+<rect class="fill-cyan-900 stroke-cyan-300" height="12" rx="2" width="28" x="96" y="48"></rect>
+<circle class="fill-cyan-300" cx="103" cy="54" r="2.5"></circle>
+<circle class="fill-cyan-300" cx="117" cy="54" r="2.5"></circle>
+</svg>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+<!-- BEGIN: TopBar -->
+<header class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+<!-- Left Controls & Status Badges -->
+<div class="flex items-center gap-3">
+<button class="p-1.5 text-slate-500 hover:text-slate-700 rounded-md hover:bg-slate-100" title="Toggle Navigation">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<line x1="3" x2="21" y1="12" y2="12"></line>
+<line x1="3" x2="21" y1="6" y2="6"></line>
+<line x1="3" x2="21" y1="18" y2="18"></line>
+</svg>
+</button>
+<div class="h-4 w-[1px] bg-slate-200 mx-1"></div>
+<!-- Connection Status Pill -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Online
+        </span>
+<!-- ROS2 Node Status Pill -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="currentColor" viewbox="0 0 24 24">
+<circle cx="5" cy="5" r="2"></circle>
+<circle cx="12" cy="5" r="2"></circle>
+<circle cx="19" cy="5" r="2"></circle>
+<circle cx="5" cy="12" r="2"></circle>
+<circle cx="12" cy="12" r="2"></circle>
+<circle cx="19" cy="12" r="2"></circle>
+<circle cx="5" cy="19" r="2"></circle>
+<circle cx="12" cy="19" r="2"></circle>
+<circle cx="19" cy="19" r="2"></circle>
+</svg>
+          ROS2: <strong class="text-emerald-600 font-semibold ml-0.5">Connected</strong>
+</span>
+<!-- Jetson Telemetry Pill -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="16" rx="2" width="16" x="4" y="4"></rect>
+<rect height="6" width="6" x="9" y="9"></rect>
+<path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"></path>
+</svg>
+          Jetson: <span class="text-emerald-500">🟢</span> 10.0 Hz (0.10 s)
+        </span>
+<!-- ESP32 Status Pill -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="20" rx="2" width="14" x="5" y="2"></rect>
+<line x1="8" x2="16" y1="18" y2="18"></line>
+</svg>
+          ESP32: <span class="text-emerald-500">🟢</span> 20.0 Hz (0.05 s)
+        </span>
+</div>
+<!-- Right System Controls -->
+<div class="flex items-center gap-3">
+<!-- Notification Bell -->
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors" title="Notifications">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600"></span>
+</button>
+<!-- Day/Night Switch -->
+<div class="flex items-center bg-slate-100 border border-slate-200 rounded-full p-0.5">
+<button class="w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-sm text-blue-600" title="Light theme">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" x2="12" y1="1" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="23"></line>
+<line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+<line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+<line x1="1" x2="3" y1="12" y2="12"></line>
+<line x1="21" x2="23" y1="12" y2="12"></line>
+<line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+<line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+</svg>
+</button>
+<button class="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600" title="Dark theme">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+</button>
+</div>
+<!-- Emergency STOP Button -->
+<button class="flex items-center gap-1.5 px-4 py-1.5 bg-[#EA1D24] hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-sm transition-all">
+<span class="w-2.5 h-2.5 bg-white rounded-xs"></span>
+          STOP
+        </button>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: Dashboard Body -->
+<main class="flex-1 p-6 space-y-5">
+<!-- BEGIN: PageHeader -->
+<section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<!-- Title & Description -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+</svg>
+</div>
+<div>
+<h2 class="text-xl font-bold text-slate-900 leading-tight">Sensors &amp; Telemetry</h2>
+<p class="text-xs text-slate-500 font-medium">Real-time sensor data, robot state and system telemetry</p>
+</div>
+</div>
+<!-- Right Controls: Time Range & Topics -->
+<div class="flex flex-wrap items-center gap-3">
+<div class="inline-flex items-center gap-1 text-xs text-slate-500 font-medium">
+            Time Range:
+            <div class="inline-flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+<button class="px-2.5 py-1 text-xs font-semibold bg-[#1769E0] text-white rounded-md shadow-xs">Live (10s)</button>
+<button class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 font-medium">1 min</button>
+<button class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 font-medium">5 min</button>
+<button class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 font-medium">15 min</button>
+<button class="px-2.5 py-1 text-xs text-slate-600 hover:text-slate-900 font-medium">1 h</button>
+</div>
+</div>
+<div class="relative">
+<select class="pl-3 pr-8 py-1 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 shadow-xs focus:ring-1 focus:ring-blue-500 focus:outline-none appearance-none cursor-pointer">
+<option>Topics: All Sensors</option>
+<option>IMU &amp; Encoders</option>
+<option>LiDAR &amp; Vision</option>
+<option>Power Diagnostics</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M6 9l6 6 6-6"></path>
+</svg>
+</div>
+</div>
+</div>
+</section>
+<!-- END: PageHeader -->
+<!-- BEGIN: Row 1 - IMU Charts (Acceleration & Angular Velocity) -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-5" data-purpose="row-1-imu">
+<!-- Card 1: IMU Acceleration -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">IMU – Acceleration (m/s²)</h3>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-3 text-[11px] font-mono">
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-blue-600 inline-block"></span>ax: <strong class="text-slate-800">-0.06</strong></span>
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-cyan-500 inline-block"></span>ay: <strong class="text-slate-800">0.11</strong></span>
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-purple-600 inline-block"></span>az: <strong class="text-slate-800">9.79</strong></span>
+</div>
+</div>
+<!-- Acceleration SVG Chart -->
+<div class="w-full pt-3 h-40">
+<svg class="w-full h-full text-slate-400 text-[9px] font-mono select-none overflow-visible" viewbox="0 0 540 140">
+<!-- Y Axis labels & grid -->
+<text class="fill-slate-500 font-sans text-[10px]" transform="rotate(-90 12,70)" x="5" y="70">a (m/s²)</text>
+<text class="fill-slate-400" x="32" y="16">12.0</text>
+<line class="grid-line" x1="55" x2="530" y1="12" y2="12"></line>
+<text class="fill-slate-400" x="32" y="38">9.0</text>
+<line class="grid-line" x1="55" x2="530" y1="35" y2="35"></line>
+<text class="fill-slate-400" x="32" y="62">6.0</text>
+<line class="grid-line" x1="55" x2="530" y1="58" y2="58"></line>
+<text class="fill-slate-400" x="32" y="85">3.0</text>
+<line class="grid-line" x1="55" x2="530" y1="82" y2="82"></line>
+<text class="fill-slate-400" x="32" y="108">0.0</text>
+<line class="axis-line stroke-slate-300" x1="55" x2="530" y1="105" y2="105"></line>
+<text class="fill-slate-400" x="26" y="126">-3.0</text>
+<line class="grid-line" x1="55" x2="530" y1="122" y2="122"></line>
+<!-- az curve (stable around 9.79-9.82 m/s²) -->
+<path d="M55,30 Q90,29 130,30 T210,29 T290,31 T370,29 T450,30 T530,29" fill="none" stroke="#9333ea" stroke-linecap="round" stroke-width="1.8"></path>
+<!-- ax curve (-0.06 near 0.0) -->
+<path d="M55,106 Q90,105 130,106 T210,107 T290,105 T370,106 T450,105 T530,106" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="1.6"></path>
+<!-- ay curve (0.11 near 0.0) -->
+<path d="M55,103 Q90,104 130,103 T210,102 T290,104 T370,103 T450,104 T530,103" fill="none" stroke="#06b6d4" stroke-linecap="round" stroke-width="1.6"></path>
+<!-- X-Axis Timestamps -->
+<text class="fill-slate-400" x="55" y="136">14:28:10</text>
+<text class="fill-slate-400" x="145" y="136">14:28:12</text>
+<text class="fill-slate-400" x="235" y="136">14:28:14</text>
+<text class="fill-slate-400" x="325" y="136">14:28:16</text>
+<text class="fill-slate-400" x="415" y="136">14:28:18</text>
+<text class="fill-slate-400" x="495" y="136">14:28:20</text>
+</svg>
+</div>
+</div>
+<!-- Card 2: IMU Angular Velocity -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">IMU – Angular Velocity (rad/s)</h3>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-3 text-[11px] font-mono">
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-blue-600 inline-block"></span>ωx: <strong class="text-slate-800">0.02</strong></span>
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-cyan-500 inline-block"></span>ωy: <strong class="text-slate-800">-0.04</strong></span>
+<span class="inline-flex items-center gap-1.5 text-slate-600"><span class="w-2.5 h-1 rounded bg-purple-600 inline-block"></span>ωz: <strong class="text-slate-800">0.15</strong></span>
+</div>
+</div>
+<!-- Angular Velocity SVG Chart -->
+<div class="w-full pt-3 h-40">
+<svg class="w-full h-full text-slate-400 text-[9px] font-mono select-none overflow-visible" viewbox="0 0 540 140">
+<!-- Y Axis labels & grid -->
+<text class="fill-slate-500 font-sans text-[10px]" transform="rotate(-90 12,70)" x="5" y="70">ω (rad/s)</text>
+<text class="fill-slate-400" x="32" y="16">2.0</text>
+<line class="grid-line" x1="55" x2="530" y1="12" y2="12"></line>
+<text class="fill-slate-400" x="32" y="30">1.5</text>
+<line class="grid-line" x1="55" x2="530" y1="26" y2="26"></line>
+<text class="fill-slate-400" x="32" y="44">1.0</text>
+<line class="grid-line" x1="55" x2="530" y1="40" y2="40"></line>
+<text class="fill-slate-400" x="32" y="58">0.5</text>
+<line class="grid-line" x1="55" x2="530" y1="54" y2="54"></line>
+<text class="fill-slate-400" x="32" y="72">0.0</text>
+<line class="axis-line stroke-slate-300" x1="55" x2="530" y1="68" y2="68"></line>
+<text class="fill-slate-400" x="26" y="86">-0.5</text>
+<line class="grid-line" x1="55" x2="530" y1="82" y2="82"></line>
+<text class="fill-slate-400" x="26" y="100">-1.0</text>
+<line class="grid-line" x1="55" x2="530" y1="96" y2="96"></line>
+<text class="fill-slate-400" x="26" y="114">-1.5</text>
+<line class="grid-line" x1="55" x2="530" y1="110" y2="110"></line>
+<text class="fill-slate-400" x="26" y="127">-2.0</text>
+<line class="grid-line" x1="55" x2="530" y1="123" y2="123"></line>
+<!-- ωz curve (subtle fluctuations around 0.15) -->
+<path d="M55,64 Q90,62 130,65 T210,63 T290,60 T370,64 T450,62 T530,65" fill="none" stroke="#9333ea" stroke-linecap="round" stroke-width="1.8"></path>
+<!-- ωx curve (0.02) -->
+<path d="M55,67 Q90,68 130,66 T210,68 T290,67 T370,69 T450,66 T530,68" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="1.6"></path>
+<!-- ωy curve (-0.04) -->
+<path d="M55,70 Q90,69 130,71 T210,69 T290,70 T370,68 T450,71 T530,69" fill="none" stroke="#06b6d4" stroke-linecap="round" stroke-width="1.6"></path>
+<!-- X-Axis Timestamps -->
+<text class="fill-slate-400" x="55" y="136">14:28:10</text>
+<text class="fill-slate-400" x="145" y="136">14:28:12</text>
+<text class="fill-slate-400" x="235" y="136">14:28:14</text>
+<text class="fill-slate-400" x="325" y="136">14:28:16</text>
+<text class="fill-slate-400" x="415" y="136">14:28:18</text>
+<text class="fill-slate-400" x="495" y="136">14:28:20</text>
+</svg>
+</div>
+</div>
+</section>
+<!-- END: Row 1 -->
+<!-- BEGIN: Row 2 - LiDAR Scan & Depth Camera (50% / 50%) -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-5" data-purpose="row-2-perception">
+<!-- LiDAR Scan Card -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+<path d="M12 12 2.1 12.5"></path>
+<path d="m16 8 3-3"></path>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">LiDAR Scan (2D)</h3>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 items-center">
+<!-- 2D Polar Visualization on Navy Viewport -->
+<div class="sm:col-span-8 bg-[#0D1B2A] rounded-lg p-2 relative flex items-center justify-center border border-slate-700/50">
+<svg class="w-full h-44 select-none font-mono text-[8px]" viewbox="0 0 260 210">
+<!-- Outer boundary grid -->
+<line stroke="#1e293b" stroke-width="1" x1="30" x2="250" y1="180" y2="180"></line>
+<line stroke="#1e293b" stroke-width="1" x1="30" x2="30" y1="10" y2="180"></line>
+<!-- Metric Axis numbers -->
+<text class="fill-slate-500" x="12" y="20">6.0</text>
+<text class="fill-slate-500" x="12" y="50">4.0</text>
+<text class="fill-slate-500" x="12" y="80">2.0</text>
+<text class="fill-slate-500" x="12" y="108">0.0</text>
+<text class="fill-slate-500" x="8" y="135">-2.0</text>
+<text class="fill-slate-500" x="8" y="160">-4.0</text>
+<text class="fill-slate-500" x="8" y="185">-6.0</text>
+<text class="fill-slate-500" x="25" y="196">-6.0</text>
+<text class="fill-slate-500" x="60" y="196">-4.0</text>
+<text class="fill-slate-500" x="98" y="196">-2.0</text>
+<text class="fill-slate-500" x="138" y="196">0.0</text>
+<text class="fill-slate-500" x="175" y="196">2.0</text>
+<text class="fill-slate-500" x="210" y="196">4.0</text>
+<text class="fill-slate-500" x="240" y="196">6.0</text>
+<text class="fill-slate-400 font-sans text-[9px]" x="135" y="206">X (m)</text>
+<text class="fill-slate-400 font-sans text-[9px]" transform="rotate(-90 8,105)" x="5" y="105">Y (m)</text>
+<!-- Center concentric radar rings -->
+<circle cx="140" cy="105" fill="none" r="75" stroke="#334155" stroke-dasharray="3 3" stroke-width="0.8"></circle>
+<circle cx="140" cy="105" fill="none" r="50" stroke="#334155" stroke-dasharray="3 3" stroke-width="0.8"></circle>
+<circle cx="140" cy="105" fill="none" r="25" stroke="#334155" stroke-dasharray="3 3" stroke-width="0.8"></circle>
+<!-- Radar crosshairs -->
+<line stroke="#334155" stroke-dasharray="2 2" stroke-width="0.8" x1="65" x2="215" y1="105" y2="105"></line>
+<line stroke="#334155" stroke-dasharray="2 2" stroke-width="0.8" x1="140" x2="140" y1="30" y2="180"></line>
+<!-- Detected indoor obstacle clusters (Cyan dots) -->
+<!-- Top hallway boundary -->
+<g class="fill-cyan-400">
+<circle cx="100" cy="50" r="1.3"></circle>
+<circle cx="106" cy="48" r="1.3"></circle>
+<circle cx="112" cy="46" r="1.3"></circle>
+<circle cx="118" cy="45" r="1.3"></circle>
+<circle cx="125" cy="44" r="1.3"></circle>
+<circle cx="132" cy="44" r="1.3"></circle>
+<circle cx="140" cy="44" r="1.3"></circle>
+<circle cx="148" cy="44" r="1.3"></circle>
+<circle cx="155" cy="46" r="1.3"></circle>
+<circle cx="162" cy="48" r="1.3"></circle>
+<circle cx="168" cy="53" r="1.3"></circle>
+<circle cx="170" cy="60" r="1.3"></circle>
+<!-- Left wall & door frame obstacle cluster -->
+<circle cx="85" cy="70" r="1.2"></circle>
+<circle cx="84" cy="78" r="1.2"></circle>
+<circle cx="83" cy="88" r="1.2"></circle>
+<circle cx="82" cy="98" r="1.2"></circle>
+<circle cx="83" cy="110" r="1.2"></circle>
+<circle cx="85" cy="120" r="1.2"></circle>
+<circle cx="95" cy="135" r="1.2"></circle>
+<circle cx="100" cy="140" r="1.2"></circle>
+<circle cx="108" cy="142" r="1.2"></circle>
+<circle cx="116" cy="142" r="1.2"></circle>
+<circle cx="125" cy="142" r="1.2"></circle>
+<!-- Right wall points -->
+<circle cx="180" cy="75" r="1.2"></circle>
+<circle cx="185" cy="85" r="1.2"></circle>
+<circle cx="186" cy="95" r="1.2"></circle>
+<circle cx="186" cy="105" r="1.2"></circle>
+<circle cx="185" cy="118" r="1.2"></circle>
+<circle cx="182" cy="128" r="1.2"></circle>
+<circle cx="175" cy="138" r="1.2"></circle>
+<circle cx="165" cy="142" r="1.2"></circle>
+</g>
+<!-- Center Robot Pointer -->
+<polygon class="fill-blue-500" points="140,97 135,110 145,110"></polygon>
+</svg>
+</div>
+<!-- Right Telemetry Specs -->
+<div class="sm:col-span-4 space-y-2.5 pl-1 text-xs">
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                  Range
+                </span>
+<span class="font-mono font-semibold text-slate-700">0.15 – 12.00 m</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                  Scan Rate
+                </span>
+<span class="font-mono font-semibold text-slate-700">10.0 Hz</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                  Points / Scan
+                </span>
+<span class="font-mono font-semibold text-slate-700">7,200</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  FOV
+                </span>
+<span class="font-mono font-semibold text-slate-700">360°</span>
+</div>
+<div class="pt-1">
+<span class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Scanning
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Depth Camera (RGB-D) Card -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M23 7l-7 5 7 5V7z"></path>
+<rect height="14" rx="2" ry="2" width="15" x="1" y="5"></rect>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Depth Camera (RGB-D)</h3>
+</div>
+<!-- Top Right Spec Badges -->
+<div class="flex items-center gap-2 text-[11px] font-mono">
+<span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600">FPS: <strong class="text-emerald-600">30.1</strong></span>
+<span class="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600">Latency: <strong class="text-emerald-600">33 ms</strong></span>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 items-center">
+<!-- Side-by-Side Dual RGB & Depth Visual Stream -->
+<div class="sm:col-span-8 flex gap-1.5 bg-slate-950 p-1.5 rounded-lg border border-slate-800 h-44 overflow-hidden">
+<!-- Left: Hallway RGB View -->
+<div class="w-1/2 h-full rounded relative overflow-hidden bg-slate-800 border border-slate-700/60">
+<svg class="w-full h-full object-cover" viewbox="0 0 160 140">
+<!-- Interior Hallway Perspective -->
+<defs>
+<lineargradient id="wallLeft" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#b0bec5"></stop>
+<stop offset="100%" stop-color="#cfd8dc"></stop>
+</lineargradient>
+<lineargradient id="floorGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#eceff1"></stop>
+<stop offset="100%" stop-color="#b0bec5"></stop>
+</lineargradient>
+</defs>
+<!-- Ceiling & Backdoor -->
+<rect fill="#f5f7fa" height="140" width="160"></rect>
+<!-- Perspective Walls -->
+<polygon fill="url(#wallLeft)" points="0,0 60,35 60,110 0,140"></polygon>
+<polygon fill="#cfd8dc" points="160,0 100,35 100,110 160,140"></polygon>
+<polygon fill="url(#floorGrad)" points="0,140 60,110 100,110 160,140"></polygon>
+<!-- End of Hallway Doorway -->
+<rect fill="#90a4ae" height="60" width="16" x="74" y="50"></rect>
+<rect fill="#78909c" height="52" width="6" x="66" y="58"></rect>
+<!-- Plant in Fore/Mid-ground Left -->
+<ellipse cx="25" cy="115" fill="#607d8b" rx="10" ry="4"></ellipse>
+<path d="M18,105 L32,105 L29,122 L21,122 Z" fill="#ffffff" stroke="#b0bec5" stroke-width="0.8"></path>
+<!-- Green Plant Foliage -->
+<path d="M25,105 Q12,85 5,80 Q15,95 24,103" fill="#2e7d32"></path>
+<path d="M25,104 Q25,75 22,65 Q30,85 26,103" fill="#388e3c"></path>
+<path d="M25,104 Q38,82 45,78 Q36,94 26,104" fill="#1b5e20"></path>
+<path d="M24,105 Q10,95 2,102 Q15,108 24,106" fill="#4caf50"></path>
+<path d="M26,105 Q40,95 48,100 Q36,108 26,106" fill="#2e7d32"></path>
+</svg>
+<span class="absolute bottom-1 left-1.5 text-[8px] font-mono text-white/90 bg-black/60 px-1 py-0.2 rounded">RGB</span>
+</div>
+<!-- Right: Pseudocolor Depth Heatmap View -->
+<div class="w-1/2 h-full rounded relative overflow-hidden bg-slate-900 border border-slate-700/60">
+<svg class="w-full h-full object-cover" viewbox="0 0 160 140">
+<!-- Depth Color Gradient: Blue (far) -> Cyan -> Green -> Yellow/Red (near) -->
+<rect fill="#020024" height="140" width="160"></rect>
+<polygon fill="#003580" points="0,0 60,35 60,110 0,140"></polygon>
+<polygon fill="#0052cc" points="160,0 100,35 100,110 160,140"></polygon>
+<polygon fill="#002060" points="0,140 60,110 100,110 160,140"></polygon>
+<rect fill="#000d33" height="60" width="16" x="74" y="50"></rect>
+<!-- Depth plant foreground (near = Cyan/Green/Yellow heatmap) -->
+<path d="M18,105 L32,105 L29,122 L21,122 Z" fill="#00f2fe" opacity="0.9"></path>
+<circle cx="25" cy="85" fill="#00e5ff" opacity="0.8" r="18"></circle>
+<circle cx="20" cy="80" fill="#76ff03" opacity="0.85" r="14"></circle>
+<circle cx="25" cy="88" fill="#ffeb3b" opacity="0.9" r="12"></circle>
+<circle cx="28" cy="94" fill="#ff5722" opacity="0.75" r="8"></circle>
+<!-- Floor near gradient -->
+<polygon fill="#00c853" opacity="0.8" points="0,140 60,140 30,128"></polygon>
+<polygon fill="#aeea00" opacity="0.6" points="30,140 160,140 110,125"></polygon>
+</svg>
+<span class="absolute bottom-1 left-1.5 text-[8px] font-mono text-white/90 bg-black/60 px-1 py-0.2 rounded">DEPTH</span>
+</div>
+</div>
+<!-- Specs Table Right -->
+<div class="sm:col-span-4 space-y-2 pl-1 text-xs">
+<div class="flex items-center justify-between">
+<span class="text-slate-500">Resolution</span>
+<span class="font-mono font-semibold text-slate-700">640 × 480</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500">FPS</span>
+<span class="font-mono font-semibold text-slate-700">30.1 Hz</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500">Latency</span>
+<span class="font-mono font-semibold text-slate-700">33 ms</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500">Depth Range</span>
+<span class="font-mono font-semibold text-slate-700">0.2 – 5.0 m</span>
+</div>
+<div class="pt-2">
+<span class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-200">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Running
+                </span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Row 2 -->
+<!-- BEGIN: Row 3 - Wheel Encoders & Motor Command vs Feedback -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-5" data-purpose="row-3-actuation">
+<!-- Wheel Encoders - RPM Card -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<circle cx="12" cy="12" r="3"></circle>
+<line x1="12" x2="12" y1="3" y2="9"></line>
+<line x1="12" x2="12" y1="15" y2="21"></line>
+<line x1="3" x2="9" y1="12" y2="12"></line>
+<line x1="15" x2="21" y1="12" y2="12"></line>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Wheel Encoders – RPM</h3>
+</div>
+<!-- Legend for 4 Mecanum wheels -->
+<div class="flex items-center gap-2.5 text-[10px] font-mono">
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-2 h-2 rounded-full bg-blue-600"></span>FL: <strong class="text-slate-800">118.4</strong></span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-2 h-2 rounded-full bg-cyan-500"></span>FR: <strong class="text-slate-800">118.1</strong></span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-2 h-2 rounded-full bg-purple-600"></span>RL: <strong class="text-slate-800">116.9</strong></span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-2 h-2 rounded-full bg-pink-500"></span>RR: <strong class="text-slate-800">117.6</strong></span>
+</div>
+</div>
+<!-- Wheel Encoders SVG Chart -->
+<div class="w-full pt-3 h-40">
+<svg class="w-full h-full text-slate-400 text-[9px] font-mono select-none overflow-visible" viewbox="0 0 540 140">
+<text class="fill-slate-500 font-sans text-[10px]" transform="rotate(-90 12,70)" x="5" y="70">RPM</text>
+<text class="fill-slate-400" x="32" y="16">200</text>
+<line class="grid-line" x1="55" x2="530" y1="12" y2="12"></line>
+<text class="fill-slate-400" x="32" y="30">150</text>
+<line class="grid-line" x1="55" x2="530" y1="26" y2="26"></line>
+<text class="fill-slate-400" x="32" y="44">100</text>
+<line class="grid-line" x1="55" x2="530" y1="40" y2="40"></line>
+<text class="fill-slate-400" x="36" y="58">50</text>
+<line class="grid-line" x1="55" x2="530" y1="54" y2="54"></line>
+<text class="fill-slate-400" x="42" y="72">0</text>
+<line class="axis-line stroke-slate-300" x1="55" x2="530" y1="68" y2="68"></line>
+<text class="fill-slate-400" x="33" y="86">-50</text>
+<line class="grid-line" x1="55" x2="530" y1="82" y2="82"></line>
+<text class="fill-slate-400" x="29" y="100">-100</text>
+<line class="grid-line" x1="55" x2="530" y1="96" y2="96"></line>
+<text class="fill-slate-400" x="29" y="114">-150</text>
+<line class="grid-line" x1="55" x2="530" y1="110" y2="110"></line>
+<text class="fill-slate-400" x="29" y="127">-200</text>
+<line class="grid-line" x1="55" x2="530" y1="123" y2="123"></line>
+<!-- 4 Wheels tracking close around 117-118 RPM (Y ~ 35px) -->
+<path d="M55,34 Q90,36 130,34 T210,33 T290,36 T370,33 T450,35 T530,34" fill="none" stroke="#2563eb" stroke-width="1.6"></path>
+<path d="M55,35 Q90,33 130,36 T210,35 T290,34 T370,36 T450,33 T530,35" fill="none" stroke="#06b6d4" stroke-width="1.6"></path>
+<path d="M55,36 Q90,37 130,35 T210,36 T290,37 T370,35 T450,37 T530,36" fill="none" stroke="#9333ea" stroke-width="1.5"></path>
+<path d="M55,35 Q90,35 130,37 T210,34 T290,35 T370,37 T450,35 T530,35" fill="none" stroke="#ec4899" stroke-width="1.5"></path>
+<!-- X-Axis Timestamps -->
+<text class="fill-slate-400" x="55" y="136">14:28:10</text>
+<text class="fill-slate-400" x="145" y="136">14:28:12</text>
+<text class="fill-slate-400" x="235" y="136">14:28:14</text>
+<text class="fill-slate-400" x="325" y="136">14:28:16</text>
+<text class="fill-slate-400" x="415" y="136">14:28:18</text>
+<text class="fill-slate-400" x="495" y="136">14:28:20</text>
+</svg>
+</div>
+</div>
+<!-- Motor - Command vs Feedback Card -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="text-blue-600 font-semibold">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="12" rx="2" width="20" x="2" y="6"></rect>
+<circle cx="8" cy="12" r="2"></circle>
+<line x1="14" x2="18" y1="10" y2="10"></line>
+<line x1="14" x2="18" y1="14" y2="14"></line>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Motor – Command vs Feedback</h3>
+</div>
+<!-- Legend Indicators -->
+<div class="flex flex-wrap items-center gap-2 text-[9px] font-mono">
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-dashed border-blue-600"></span>Cmd v_x</span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-blue-600"></span>Fb v_x</span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-dashed border-cyan-500"></span>Cmd v_y</span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-cyan-500"></span>Fb v_y</span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-dashed border-purple-600"></span>Cmd ω</span>
+<span class="inline-flex items-center gap-1 text-slate-600"><span class="w-3 border-b-2 border-purple-600"></span>Fb ω</span>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 items-center">
+<!-- Step Response Comparison SVG Chart -->
+<div class="sm:col-span-8 h-40">
+<svg class="w-full h-full text-slate-400 text-[9px] font-mono select-none overflow-visible" viewbox="0 0 360 140">
+<text class="fill-slate-500 font-sans text-[8px]" transform="rotate(-90 8,70)" x="3" y="70">v (m/s), ω (rad/s)</text>
+<text class="fill-slate-400" x="24" y="16">1.5</text>
+<line class="grid-line" x1="42" x2="355" y1="12" y2="12"></line>
+<text class="fill-slate-400" x="24" y="34">1.0</text>
+<line class="grid-line" x1="42" x2="355" y1="30" y2="30"></line>
+<text class="fill-slate-400" x="24" y="52">0.5</text>
+<line class="grid-line" x1="42" x2="355" y1="48" y2="48"></line>
+<text class="fill-slate-400" x="24" y="70">0.0</text>
+<line class="axis-line stroke-slate-300" x1="42" x2="355" y1="66" y2="66"></line>
+<text class="fill-slate-400" x="20" y="88">-0.5</text>
+<line class="grid-line" x1="42" x2="355" y1="84" y2="84"></line>
+<text class="fill-slate-400" x="20" y="106">-1.0</text>
+<line class="grid-line" x1="42" x2="355" y1="102" y2="102"></line>
+<text class="fill-slate-400" x="20" y="124">-1.5</text>
+<line class="grid-line" x1="42" x2="355" y1="120" y2="120"></line>
+<!-- Command Step Response: 0 -> 0.8 at t=14:28:12 -->
+<path d="M42,66 L95,66 L115,38 L355,38" fill="none" stroke="#2563eb" stroke-dasharray="3 3" stroke-width="1.5"></path>
+<!-- Feedback Step Response: first order lag curve tracking Cmd -->
+<path d="M42,66 L95,66 Q110,65 125,41 T160,38 L355,38" fill="none" stroke="#2563eb" stroke-width="1.8"></path>
+<!-- Command v_y around 0.2 -->
+<path d="M42,66 L95,66 L110,58 L355,58" fill="none" stroke="#06b6d4" stroke-dasharray="2 2" stroke-width="1.3"></path>
+<path d="M42,66 L95,66 Q115,64 125,58 L355,58" fill="none" stroke="#06b6d4" stroke-width="1.4"></path>
+<!-- Timestamps -->
+<text class="fill-slate-400 text-[8px]" x="42" y="134">14:28:10</text>
+<text class="fill-slate-400 text-[8px]" x="100" y="134">14:28:12</text>
+<text class="fill-slate-400 text-[8px]" x="160" y="134">14:28:14</text>
+<text class="fill-slate-400 text-[8px]" x="220" y="134">14:28:16</text>
+<text class="fill-slate-400 text-[8px]" x="280" y="134">14:28:18</text>
+<text class="fill-slate-400 text-[8px]" x="325" y="134">14:28:20</text>
+</svg>
+</div>
+<!-- Command vs Feedback Metrics Table -->
+<div class="sm:col-span-4 bg-slate-50/80 rounded-lg p-2.5 border border-slate-200/80 text-xs">
+<div class="grid grid-cols-3 pb-1 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase">
+<span></span>
+<span class="text-right">Command</span>
+<span class="text-right">Feedback</span>
+</div>
+<div class="space-y-1.5 pt-1.5 font-mono text-[11px]">
+<div class="grid grid-cols-3 items-center">
+<span class="font-sans text-slate-600 font-medium">v_x (m/s)</span>
+<span class="text-right text-slate-700">0.80</span>
+<span class="text-right text-slate-900 font-bold">0.79</span>
+</div>
+<div class="grid grid-cols-3 items-center">
+<span class="font-sans text-slate-600 font-medium">v_y (m/s)</span>
+<span class="text-right text-slate-700">0.20</span>
+<span class="text-right text-slate-900 font-bold">0.21</span>
+</div>
+<div class="grid grid-cols-3 items-center">
+<span class="font-sans text-slate-600 font-medium">ω (rad/s)</span>
+<span class="text-right text-slate-700">0.00</span>
+<span class="text-right text-slate-900 font-bold">0.01</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Row 3 -->
+<!-- BEGIN: Row 4 - Summary Cards (Battery, Sensor Health, ROS2, Robot State) -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5" data-purpose="row-4-summary">
+<!-- Summary Card 1: Battery & Power -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+<span class="text-blue-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="10" rx="2" ry="2" width="16" x="2" y="7"></rect>
+<line x1="22" x2="22" y1="11" y2="13"></line>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Battery &amp; Power</h3>
+</div>
+<div class="pt-3 flex items-center justify-between">
+<!-- Green Battery Graphic -->
+<div class="flex items-center gap-3">
+<div class="w-7 h-12 rounded border-2 border-emerald-500 p-0.5 relative flex flex-col justify-end bg-emerald-50">
+<div class="w-2.5 h-1 bg-emerald-500 absolute -top-1.5 left-1/2 -translate-x-1/2 rounded-t-xs"></div>
+<div class="w-full bg-emerald-500 rounded-xs h-[78%]"></div>
+</div>
+<div>
+<div class="text-xl font-bold font-mono text-slate-900 leading-none">24.1 V</div>
+<div class="text-[11px] text-slate-500 font-medium mt-0.5">(6S Li-ion)</div>
+</div>
+</div>
+<!-- Current / Power / SoC -->
+<div class="text-right space-y-0.5 font-mono text-xs">
+<div class="text-slate-500">Current: <span class="font-semibold text-slate-800">3.6 A</span></div>
+<div class="text-slate-500">Power: <span class="font-semibold text-slate-800">86.8 W</span></div>
+<div class="text-slate-500">SoC (est.): <span class="font-bold text-emerald-600">78 %</span></div>
+</div>
+</div>
+<!-- Bottom Battery Charge Bar -->
+<div class="pt-3">
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+<div class="bg-emerald-500 h-full rounded-full transition-all" style="width: 78%"></div>
+</div>
+</div>
+</div>
+<!-- Summary Card 2: Sensor Health -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+<span class="text-blue-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Sensor Health</h3>
+</div>
+<div class="pt-2 space-y-1.5 text-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="text-emerald-500 font-bold">✔</span>
+<span>LiDAR (RPLIDAR)</span>
+</div>
+<div class="flex items-center gap-2 font-mono">
+<span class="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded border border-emerald-200">OK</span>
+<span class="text-slate-500 text-[11px]">10.0 Hz</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="text-emerald-500 font-bold">✔</span>
+<span>Depth Camera</span>
+</div>
+<div class="flex items-center gap-2 font-mono">
+<span class="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded border border-emerald-200">OK</span>
+<span class="text-slate-500 text-[11px]">30.1 Hz</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="text-emerald-500 font-bold">✔</span>
+<span>IMU (BNO085)</span>
+</div>
+<div class="flex items-center gap-2 font-mono">
+<span class="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded border border-emerald-200">OK</span>
+<span class="text-slate-500 text-[11px]">100.0 Hz</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-slate-700">
+<span class="text-emerald-500 font-bold">✔</span>
+<span>Encoders (×4)</span>
+</div>
+<div class="flex items-center gap-2 font-mono">
+<span class="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded border border-emerald-200">OK</span>
+<span class="text-slate-500 text-[11px]">50.0 Hz</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Summary Card 3: ROS2 Node Status -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+<span class="text-blue-600">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<circle cx="5" cy="5" r="2.5"></circle><circle cx="12" cy="5" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle>
+<circle cx="5" cy="12" r="2.5"></circle><circle cx="12" cy="12" r="2.5"></circle><circle cx="19" cy="12" r="2.5"></circle>
+<circle cx="5" cy="19" r="2.5"></circle><circle cx="12" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">ROS2 Node Status</h3>
+</div>
+<div class="pt-2 space-y-1.5 text-xs font-mono">
+<div class="flex items-center justify-between">
+<span class="text-slate-600 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                /slam_toolbox
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">Active</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                /nav2_controller
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">Active</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                /detect_tracking
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">Active</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                /micro_ros_agent
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">Active</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                /robot_state_publisher
+              </span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">Active</span>
+</div>
+</div>
+</div>
+<!-- Summary Card 4: Robot State (Summary) -->
+<div class="telemetry-card p-4 flex flex-col justify-between">
+<div class="flex items-center gap-2 pb-2.5 border-b border-slate-100">
+<span class="text-blue-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<line x1="12" x2="12" y1="16" y2="12"></line>
+<line x1="12" x2="12.01" y1="8" y2="8"></line>
+</svg>
+</span>
+<h3 class="text-xs font-bold text-slate-800 tracking-tight">Robot State (Summary)</h3>
+</div>
+<div class="pt-2 space-y-2 text-xs">
+<!-- Operating Mode -->
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="12" rx="6" width="20" x="2" y="6"></rect><circle cx="8" cy="12" r="2"></circle></svg>
+                Operating Mode
+              </span>
+<span class="px-2.5 py-0.5 bg-blue-100 text-blue-700 font-semibold rounded text-[11px]">Manual</span>
+</div>
+<!-- Linear Velocity -->
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                Linear Velocity (v)
+              </span>
+<span class="font-mono font-bold text-slate-800">0.81 m/s</span>
+</div>
+<!-- Angular Velocity -->
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                Angular Velocity (ω)
+              </span>
+<span class="font-mono font-bold text-slate-800">0.01 rad/s</span>
+</div>
+<!-- Pose -->
+<div class="flex items-center justify-between">
+<span class="text-slate-500 inline-flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                Pose (x, y, yaw)
+              </span>
+<span class="font-mono font-bold text-slate-800 text-[11px]">(2.34, -1.08, 45.2°)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Row 4 -->
+</main>
+<!-- END: Dashboard Body -->
+</div>
+<!-- END: Main Content Area -->
+</body></html>
