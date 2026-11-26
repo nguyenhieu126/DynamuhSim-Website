@@ -131,6 +131,126 @@ clean_project() {
   [[ "$answer" == CLEAN ]] || { printf 'Cleanup canceled.\n'; return 0; }
   docker compose down # Deliberately no -v, --rmi, or global prune.
 }
+# Mobile runs independently: no Docker, backend or .env setup is required.
+mobile_ready() {
+  need node || return; need npm || return; need npx || return
+  if ! node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(major > 22 || (major === 22 && minor >= 13) ? 0 : 1)'; then
+    error "Mobile requires Node.js 22.13+; found $(node --version). Run: nvm install 22 && nvm use 22"
+    return 1
+  fi
+  [[ -f "$ROOT/mobile/package.json" && -f "$ROOT/mobile/package-lock.json" ]] || { error 'Missing mobile application or package-lock.json.'; return 1; }
+  if [[ ! -x "$ROOT/mobile/node_modules/.bin/expo" ]]; then
+    printf 'Installing mobile dependencies from package-lock.json...\n'
+    (cd -- "$ROOT/mobile" && npm ci --no-audit --no-fund) || return
+  fi
+}
+mobile_port() {
+  local port="${MOBILE_PORT:-8081}"
+  [[ "$port" =~ ^[0-9]{1,5}$ ]] || { error 'MOBILE_PORT must be an integer from 1 to 65535.'; return 1; }
+  (( 10#$port >= 1 && 10#$port <= 65535 )) || { error 'MOBILE_PORT must be from 1 to 65535.'; return 1; }
+  printf '%s\n' "$((10#$port))"
+}
+mobile_port_free() {
+  node - "$1" <<'JS'
+const net = require('node:net');
+const port = Number(process.argv[2]);
+const server = net.createServer();
+server.once('error', () => {
+  console.error(`ERROR: Mobile port ${port} is busy. Stop the other Metro server or choose another MOBILE_PORT.`);
+  process.exitCode = 1;
+});
+server.listen({port, host:'0.0.0.0', exclusive:true}, () => server.close());
+JS
+}
+mobile_adb() {
+  local candidate
+  if command -v adb >/dev/null 2>&1; then command -v adb; return; fi
+  for candidate in "${ANDROID_HOME:-}/platform-tools/adb" "${ANDROID_SDK_ROOT:-}/platform-tools/adb" "${HOME:-}/Android/Sdk/platform-tools/adb"; do
+    [[ -x "$candidate" ]] && { printf '%s\n' "$candidate"; return; }
+  done
+  error 'ADB not found. Install Android SDK Platform-Tools or set ANDROID_HOME.'
+  return 1
+}
+mobile_device() {
+  local adb="$1" output serial state rest selected
+  local -a devices=()
+  output="$("$adb" devices)" || return
+  while read -r serial state rest; do
+    [[ "$state" == device && "$serial" != emulator-* ]] && devices+=("$serial")
+  done <<< "$output"
+  if (( ${#devices[@]} == 0 )); then
+    error 'No authorized Android phone. Connect USB, enable USB debugging and accept the authorization prompt.'
+    printf '%s\n' "$output" >&2
+    return 1
+  fi
+  if (( ${#devices[@]} == 1 )); then printf '%s\n' "${devices[0]}"; return; fi
+  printf 'Choose the Android phone:\n' >&2
+  select selected in "${devices[@]}"; do
+    [[ -n "$selected" ]] && { printf '%s\n' "$selected"; return; }
+    error 'Invalid device selection.'
+  done
+  return 1
+}
+mobile_run() (
+  local mode="$1" port adb serial app_id installed
+  mobile_ready || return
+  port="$(mobile_port)" || return
+  mobile_port_free "$port" || return
+  cd -- "$ROOT/mobile" || return
+  if [[ "$mode" == qr ]]; then
+    printf '\nQR / Expo Go: install an SDK-compatible Expo Go client on Android.\n'
+    printf 'Connect the phone and computer to the same Wi-Fi, then scan the QR code.\n'
+    printf 'This opens the mobile UI inside Expo Go; it does not install a standalone APK.\n'
+    printf 'Save code to refresh; press r to reload. Ctrl+C stops Metro.\n\n'
+    npx --no-install expo start --go --lan --port "$port"
+    return
+  fi
+  adb="$(mobile_adb)" || return
+  serial="$(mobile_device "$adb")" || return
+  if [[ "$mode" == usb-install ]]; then
+    need java || { error 'Install a JDK and configure Android SDK in Android Studio before building.'; return 1; }
+    printf '\nBuild and install/update the Android debug app on %s.\n' "$serial"
+    printf 'Android SDK and a JDK are required. Metro stays running after installation.\n'
+    printf 'Use this again after native dependency or app configuration changes.\n\n'
+    "$adb" -s "$serial" reverse "tcp:$port" "tcp:$port" || return
+    ANDROID_SERIAL="$serial" npx --no-install expo run:android --device "$serial" --port "$port"
+  elif [[ "$mode" == usb-update ]]; then
+    app_id="$(node -p 'JSON.parse(require("node:fs").readFileSync("app.json", "utf8")).expo.android.package')" || return
+    [[ "$app_id" =~ ^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$ ]] || { error 'Invalid Android package in mobile/app.json.'; return 1; }
+    installed="$("$adb" -s "$serial" shell pm path "$app_id")" || return
+    [[ "$installed" == *package:* ]] || { error 'PBL6 app is not installed. Use --mobile-usb to build and install it first.'; return 1; }
+    "$adb" -s "$serial" reverse "tcp:$port" "tcp:$port" || return
+    printf '\nUSB JavaScript update on %s (no APK rebuild).\n' "$serial"
+    printf 'When Metro is ready, open the installed PBL6 app on your phone; press r to reload.\n'
+    printf 'This requires the debug app installed with --mobile-usb. Native changes require another build.\n'
+    printf 'Use the same MOBILE_PORT as the original USB build; rebuild if the app points to a different port.\n'
+    printf 'Ctrl+C stops Metro.\n\n'
+    ANDROID_SERIAL="$serial" npx --no-install expo start --localhost --port "$port"
+  else
+    error 'Unknown mobile action.'; return 1
+  fi
+)
+mobile_menu() {
+  local choice
+  while true; do
+    cat <<'MOBILE'
+
+PBL6 MOBILE - runs independently of the website / backend
+[1] QR: open / update UI in Expo Go (same Wi-Fi)
+[2] USB: build and install / update Android debug app
+[3] USB: update JavaScript in installed debug app (no rebuild)
+[0] Back / exit
+MOBILE
+    read -r -p 'Mobile action [1]: ' choice || return 0
+    case "$choice" in
+      1|'') mobile_run qr; return $?;;
+      2) mobile_run usb-install; return $?;;
+      3) mobile_run usb-update; return $?;;
+      0) return 0;;
+      *) error 'Invalid mobile action.';;
+    esac
+  done
+}
 help_text() {
   cat <<'HELP'
 Usage: ./run.sh [option]
@@ -142,7 +262,13 @@ Usage: ./run.sh [option]
   --status     Project container and API status
   --check      Targeted API and six-route smoke checks (stack must run)
   --stop       Stop project services, preserve data
+  --mobile     Independent mobile menu (QR / USB)
+  --mobile-qr  Open/update UI via Expo Go QR on the same Wi-Fi
+  --mobile-usb Build and install/update Android debug app via USB
+  --mobile-usb-update  Serve JavaScript to an installed debug app via USB
   --help       Show this help
+Mobile requires Node.js 22.13+. USB requires ADB; building also needs Android SDK/JDK.
+MOBILE_PORT defaults to 8081 (example: MOBILE_PORT=8082 ./run.sh --mobile-qr).
 Without an option, display the interactive management menu.
 HELP
 }
@@ -150,6 +276,8 @@ dispatch() {
   case "$1" in
     1|--build|'') start_stack build;; 2|--quick) start_stack quick;; 3|--frontend) frontend_dev;; 4|--backend) backend_dev;;
     5|--recreate) start_stack recreate;; 6|--status) status;; 7) logs;; 8) open_page;; 9|--check) checks;; 10|--stop) stop_services;; 11) clean_project;;
+    12|--mobile) mobile_menu;; --mobile-qr) mobile_run qr;;
+    --mobile-usb) mobile_run usb-install;; --mobile-usb-update) mobile_run usb-update;;
     --help|-h) help_text;; *) error 'Unknown option. Use --help.'; return 1;;
   esac
 }
@@ -171,6 +299,7 @@ while true; do
 [9] Run system checks
 [10] Stop services (preserve data)
 [11] Clean project containers safely
+[12] Mobile app (independent QR / USB)
 [0] Exit
 MENU
   read -r -p 'Select [1]: ' selection || exit 0

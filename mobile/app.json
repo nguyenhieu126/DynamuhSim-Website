@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "PBL6 Robot Console",
+    "slug": "pbl6-mobile",
+    "version": "1.0.0",
+    "scheme": "pbl6",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "com.pbl6.robotconsole",
+      "predictiveBackGestureEnabled": true
+    },
+    "plugins": ["expo-router", "expo-font", "expo-asset"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

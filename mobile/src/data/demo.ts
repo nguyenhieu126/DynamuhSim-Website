@@ -1,0 +1,138 @@
+import type {
+  RobotEvent,
+  RobotStatus,
+  Telemetry,
+  TrackedObject,
+} from "../types/robot";
+export const demoStatus: RobotStatus = {
+  state: "DEMO",
+  robot: "PBL6-01",
+  hardwareConnected: false,
+  rosConnected: false,
+  ownership: null,
+  battery: 78,
+  voltage: 24.1,
+  temperature: 52,
+  moving: false,
+  controlVerified: false,
+};
+export const tracks: TrackedObject[] = [
+  {
+    id: 1,
+    label: "Person",
+    confidence: 0.96,
+    distance: 1.42,
+    velocity: 0.73,
+    risk: "High",
+    box: [0.13, 0.19, 0.32, 0.65],
+    position: [0.4, 1.3],
+    predicted: [
+      [0.3, 1],
+      [0.2, 0.8],
+    ],
+  },
+  {
+    id: 2,
+    label: "Person",
+    confidence: 0.91,
+    distance: 3.26,
+    velocity: 0.41,
+    risk: "Low",
+    box: [0.52, 0.28, 0.21, 0.51],
+    position: [-1.2, 3],
+    predicted: [[-1, 2.8]],
+  },
+  {
+    id: 3,
+    label: "Object (Trolley)",
+    confidence: 0.89,
+    distance: 2.18,
+    velocity: 0,
+    risk: "Medium",
+    box: [0.79, 0.46, 0.17, 0.39],
+    position: [1.8, 1.2],
+    predicted: [],
+  },
+];
+export const events: RobotEvent[] = [
+  {
+    id: "e1",
+    time: "14:32:18",
+    level: "critical",
+    title: "High collision risk · ID #1",
+    detail: "Simulated person at 1.42 m. No inference service connected.",
+  },
+  {
+    id: "e2",
+    time: "14:32:14",
+    level: "info",
+    title: "Object tracked · ID #3",
+    detail: "Demonstration confidence 0.89, distance 2.18 m.",
+  },
+  {
+    id: "e3",
+    time: "14:32:10",
+    level: "warning",
+    title: "Human detected · ID #2",
+    detail: "Simulated detection. No live camera stream.",
+  },
+  {
+    id: "e4",
+    time: "14:32:08",
+    level: "info",
+    title: "Demo environment loaded",
+    detail: "Jetson, ESP32 and ROS 2 hardware are unavailable.",
+  },
+];
+export const telemetry: Telemetry = {
+  velocity: { vx: 0, vy: 0, wz: 0 },
+  commanded: { vx: 0, vy: 0, wz: 0 },
+  pose: { x: 2.416, y: 1.983, yaw: 0.48171 },
+  wheels: ["FL", "FR", "RL", "RR"].map((wheel) => ({
+    wheel: wheel as "FL" | "FR" | "RL" | "RR",
+    rpm: 0,
+    velocity: 0,
+  })),
+  imu: {
+    acceleration: [0.05, -0.1, 9.83],
+    angular: [0.01, -0.02, 0.005],
+    orientation: [0, 0, 0.48171],
+  },
+  lidar: {
+    ranges: Array.from(
+      { length: 180 },
+      (_, i) => 2.4 + 0.4 * Math.sin(i * 0.15),
+    ),
+    rate: 10,
+    min: 0.15,
+    max: 12,
+    nearest: 0.68,
+  },
+  camera: { rgb: false, depth: false, fps: null, rgbUrl: null, depthUrl: null },
+  tracks,
+  navigation: {
+    mapping: false,
+    localized: false,
+    nav2: false,
+    status: "Unavailable",
+    goal: null,
+  },
+};
+export const defaultSettings = {
+  robotName: "PBL6-Robot01",
+  language: "English",
+  backendUrl: "",
+  maxSpeed: 0.8,
+  maxAcceleration: 1.5,
+  wheelRadius: 0.048,
+  robotLength: 0.32,
+  robotWidth: 0.3,
+  aiModel: "YOLOv8 (Human Detection)",
+  confidence: 0.5,
+  tracking: true,
+  prediction: true,
+  commandTimeout: 0.5,
+  watchdogTimeout: 1,
+  autoStop: true,
+};
+export type LocalSettings = typeof defaultSettings;
